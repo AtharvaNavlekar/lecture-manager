@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+@theme {
+  /* Premium Emerald Palette */
+  --color-primary: #10b981;
+  /* Emerald 500 */
+  --color-primary-hover: #059669;
+  /* Emerald 600 */
+  --color-accent: #34d399;
+  /* Emerald 400 */
+
+  --color-bg-void: #020617;
+  /* Slate 950 (Deepest) */
+  --color-bg-surface: #0f172a;
+  /* Slate 900 */
+  --color-bg-glass: rgba(15, 23, 42, 0.6);
+
+  --color-text-main: #f8fafc;
+  --color-text-muted: #94a3b8;
+
+  --font-sans: 'Outfit', 'Inter', sans-serif;
+  /* Cleaner, more modern font */
+
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-shine: shine 3s linear infinite;
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes shine {
+    from {
+      background-position: 0 0;
+    }
+
+    to {
+      background-position: -200% 0;
+    }
+  }
+}
+
+/* Global Reset & Base */
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background-color: var(--color-bg-void);
+  color: var(--color-text-main);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  background-image:
+    radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.15), transparent 40%),
+    radial-gradient(circle at 80% 10%, rgba(52, 211, 153, 0.05), transparent 40%);
+  background-attachment: fixed;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #10b981;
+}
+
+/* Specific Custom Scrollbar Class */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(244, 63, 94, 0.8); /* Rose color on hover to match UI */
+}
+
+/* Utility Classes */
+.glass {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.glass-hover:hover {
+  background: rgba(15, 23, 42, 0.8);
+  border-color: rgba(16, 185, 129, 0.3);
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.card-tilt {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transform-style: preserve-3d;
+}
+
+.card-tilt:hover {
+  transform: translateY(-5px) scale(1.01);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(16, 185, 129, 0.1);
+}

@@ -1,0 +1,40 @@
+{
+    "name": "lecture-manager-server",
+    "version": "2.0.0",
+    "description": "API Server for Lecture Manager",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js",
+        "dev": "nodemon index.js",
+        "test": "jest",
+        "test:watch": "jest --watch",
+        "test:coverage": "jest --coverage",
+        "test:integration": "jest --testPathPattern=integration",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix"
+    },
+    "dependencies": {
+        "bcrypt": "^5.1.1",
+        "body-parser": "^1.20.2",
+        "cors": "^2.8.5",
+        "dotenv": "^16.3.1",
+        "exceljs": "^4.4.0",
+        "express": "^4.18.2",
+        "helmet": "^8.1.0",
+        "json2csv": "^6.0.0-alpha.2",
+        "jsonwebtoken": "^9.0.2",
+        "knex": "^3.1.0",
+        "multer": "^2.0.2",
+        "node-cron": "^4.2.1",
+        "nodemailer": "^7.0.12",
+        "pdfkit": "^0.15.2",
+        "sqlite3": "^5.1.6",
+        "uuid": "^13.0.0",
+        "winston": "^3.19.0",
+        "xlsx": "^0.18.5"
+    },
+    "devDependencies": {
+        "nodemon": "^3.0.1"
+    },
+    "complexity": 1
+}

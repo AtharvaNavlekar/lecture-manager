@@ -1,0 +1,224 @@
+/* ========================================
+   MOBILE RESPONSIVE STYLES
+   ======================================== */
+
+/* Tablets and below (768px) */
+@media (max-width: 768px) {
+    /* Layout adjustments */
+    .max-w-7xl {
+        max-width: 100%;
+        padding: 1rem;
+    }
+
+    /* Tables - make scrollable */
+    .overflow-x-auto {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+        min-width: 600px;
+    }
+
+    /* Cards - stack vertically */
+    .grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Forms - full width inputs */
+    .grid-cols-2 {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Buttons - full width on mobile */
+    button:not(.inline-button) {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Navigation - compact */
+    .flex.gap-4 {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    /* Countdown timer - smaller text */
+    .countdown-timer {
+        font-size: 0.75rem !important;
+    }
+
+    /* Hide less important columns in tables */
+    th:nth-child(n+4),
+    td:nth-child(n+4) {
+        display: none;
+    }
+
+    /* Show essential columns only */
+    th:nth-child(1), th:nth-child(2), th:nth-child(3),
+    td:nth-child(1), td:nth-child(2), td:nth-child(3) {
+        display: table-cell;
+    }
+
+    /* Modal dialogs - full screen on mobile */
+    .modal-content {
+        width: 100vw !important;
+        height: 100vh !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+    }
+
+    /* Padding adjustments */
+    .p-8 {
+        padding: 1rem !important;
+    }
+
+    .p-6 {
+        padding: 0.75rem !important;
+    }
+
+    /* Font size adjustments */
+    h1, .text-2xl {
+        font-size: 1.5rem !important;
+    }
+
+    h2, .text-xl {
+        font-size: 1.25rem !important;
+    }
+
+    /* Stats cards - smaller */
+    .stat-card {
+        padding: 1rem !important;
+    }
+
+    .stat-value {
+        font-size: 1.5rem !important;
+    }
+}
+
+/* Mobile phones (480px and below) */
+@media (max-width: 480px) {
+    /* Even more compact */
+    body {
+        font-size: 14px;
+    }
+
+    /* Single column everything */
+    .flex {
+        flex-direction: column !important;
+    }
+
+    /* Hide all but critical table columns */
+    th:nth-child(n+3),
+    td:nth-child(n+3) {
+        display: none;
+    }
+
+    /* Action buttons - stack */
+    .action-buttons {
+        flex-direction: column !important;
+        width: 100% !important;
+    }
+
+    .action-buttons button {
+        width: 100% !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    /* Navigation tabs - scrollable */
+    .tab-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Compact padding everywhere */
+    .p-4 {
+        padding: 0.5rem !important;
+    }
+
+    /* Charts - full width */
+    .chart-container {
+        width: 100% !important;
+        height: 250px !important;
+    }
+}
+
+/* Landscape phones */
+@media (max-width: 768px) and (orientation: landscape) {
+    /* Reduce header heights */
+    header {
+        height: 48px !important;
+    }
+
+    /* Compact navigation */
+    nav {
+        padding: 0.25rem !important;
+    }
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+    /* Larger touch targets */
+    button, a, input[type="checkbox"], input[type="radio"] {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    /* No hover states on touch devices */
+    .hover\:bg-gray-50:hover {
+        background-color: transparent !important;
+    }
+
+    /* Larger text inputs */
+    input[type="text"],
+    input[type="email"],
+    input[type="date"],
+    select,
+    textarea {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+        padding: 0.75rem !important;
+    }
+}
+
+/* High DPI screens */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    /* Sharper text rendering */
+    body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+/* Accessibility - Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: #1a1a1a;
+        --text-color: #ffffff;
+        --border-color: #333333;
+    }
+
+    body.auto-dark-mode {
+        background-color: var(--bg-color);
+        color: var(--text-color);
+    }
+
+    .bg-white {
+        background-color: #2a2a2a !important;
+    }
+
+    .text-gray-900 {
+        color: #e5e5e5 !important;
+    }
+
+    .border-gray-200 {
+        border-color: var(--border-color) !important;
+    }
+}
