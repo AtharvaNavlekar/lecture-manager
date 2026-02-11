@@ -23,13 +23,15 @@ const getSyncData = (req, res) => {
         // Teachers see their own classes. Admins see everything (or we can limit admins too if needed, but for sync usually own is best)
         // For Dashboard, we just need the user's schedule. Use getMasterSchedule for full view.
 
-        const today = getLocalDate();
+        // Get current day of week (e.g., 'Wednesday') instead of specific date
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const todayDayName = dayNames[new Date().getDay()];
 
         db.all(`
             SELECT * FROM lectures 
             WHERE (scheduled_teacher_id = ? OR substitute_teacher_id = ?) 
-            AND date = ? 
-        `, [userId, userId, today], (err2, l) => {
+            AND day_of_week = ? 
+        `, [userId, userId, todayDayName], (err2, l) => {
             if (err2) return res.status(500).json({ success: false });
             data.lectures = l || []; // Only MY lectures for today
 
