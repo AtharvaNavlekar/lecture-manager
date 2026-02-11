@@ -17,9 +17,8 @@ http://localhost:5173
 
 ### 2. Login Credentials
 - **Admin**: admin@college.edu / admin123
-- **HOD**: hod@college.edu / hod123
-- **Teacher**: teacher@college.edu / teacher123
-- **Student**: student@college.edu / student123
+- **HOD**: it.prof1@college.edu / teacher123
+- **Teacher**: it.prof2@college.edu / teacher123
 
 ---
 
