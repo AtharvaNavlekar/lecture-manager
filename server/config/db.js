@@ -11,6 +11,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
 // Configure for performance
 db.configure('busyTimeout', 3000);
 db.run("PRAGMA journal_mode = WAL;");
+db.run("PRAGMA synchronous = NORMAL;");
 
 const initDB = () => {
     db.serialize(() => {

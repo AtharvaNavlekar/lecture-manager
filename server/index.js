@@ -62,6 +62,27 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Main startup function
 async function startServer() {
   try {
+    // Security validations before starting
+    if (process.env.NODE_ENV === 'production') {
+      const secret = process.env.JWT_SECRET || '';
+      if (secret.length < 32 || secret === 'your-secret-key-change-in-production') {
+        throw new Error('FATAL: JWT_SECRET is missing or too weak. Set a strong secret.');
+      }
+
+      const adminUser = await new Promise((resolve, reject) => {
+        db.get("SELECT password FROM teachers WHERE email = 'admin@college.edu'", [], (err, row) => {
+          if (err) reject(err);
+          resolve(row);
+        });
+      });
+
+      if (adminUser) {
+        const bcrypt = require('bcrypt');
+        const isDefault = await bcrypt.compare('admin123', adminUser.password);
+        if (isDefault) throw new Error('FATAL: Default admin password not changed. Refusing to start.');
+      }
+    }
+
     // Step 1: Perform health checks
     logger.info('🔍 Performing startup health checks...');
     await performHealthChecks();
@@ -84,35 +105,35 @@ async function startServer() {
     logger.info('📊 Legacy error logging enabled');
 
     // Health check endpoint
-    app.get('/api/health', createHealthEndpoint());
+    app.get('/api/v1/health', createHealthEndpoint());
 
     // API Routes
-    app.use('/api/auth', authRoutes);
-    app.use('/api/auth', passwordResetRoutes);
-    app.use('/api/teachers', teacherRoutes);
-    app.use('/api/lectures', lectureRoutes);
-    app.use('/api/hod', hodRoutes);
-    app.use('/api/students', studentRoutes);
-    app.use('/api/subjects', require('./routes/subjectRoutes'));
-    app.use('/api/admin', require('./routes/adminRoutes'));
-    app.use('/api/admin', require('./routes/dataManagementRoutes'));
-    app.use('/api/settings', require('./routes/settingsRoutes'));
-    app.use('/api/ai', require('./routes/aiRoutes'));
-    app.use('/api/leaves', require('./routes/leaveRoutes'));
-    app.use('/api/assignments', require('./routes/assignmentRoutes'));
-    app.use('/api/announcements', require('./routes/announcementRoutes'));
-    app.use('/api/resources', require('./routes/resourceRoutes'));
-    app.use('/api/substitutes', require('./routes/substituteRoutes'));
-    app.use('/api/evaluations', require('./routes/evaluationRoutes'));
-    app.use('/api/search', require('./routes/searchRoutes'));
-    app.use('/api/audit', require('./routes/auditRoutes'));
-    app.use('/api/reports', require('./routes/reportRoutes'));
-    app.use('/api/notifications', require('./routes/notificationRoutes'));
-    app.use('/api/calendar', require('./routes/calendarRoutes'));
-    app.use('/api/files', require('./routes/fileRoutes'));
-    app.use('/api/config', configRoutes);
-    app.use('/api/automation', require('./routes/automationRoutes'));
-    app.use('/api/analytics', require('./routes/analyticsRoutes'));
+    app.use('/api/v1/auth', authRoutes);
+    app.use('/api/v1/auth', passwordResetRoutes);
+    app.use('/api/v1/teachers', teacherRoutes);
+    app.use('/api/v1/lectures', lectureRoutes);
+    app.use('/api/v1/hod', hodRoutes);
+    app.use('/api/v1/students', studentRoutes);
+    app.use('/api/v1/subjects', require('./routes/subjectRoutes'));
+    app.use('/api/v1/admin', require('./routes/adminRoutes'));
+    app.use('/api/v1/admin', require('./routes/dataManagementRoutes'));
+    app.use('/api/v1/settings', require('./routes/settingsRoutes'));
+    app.use('/api/v1/ai', require('./routes/aiRoutes'));
+    app.use('/api/v1/leaves', require('./routes/leaveRoutes'));
+    app.use('/api/v1/assignments', require('./routes/assignmentRoutes'));
+    app.use('/api/v1/announcements', require('./routes/announcementRoutes'));
+    app.use('/api/v1/resources', require('./routes/resourceRoutes'));
+    app.use('/api/v1/substitutes', require('./routes/substituteRoutes'));
+    app.use('/api/v1/evaluations', require('./routes/evaluationRoutes'));
+    app.use('/api/v1/search', require('./routes/searchRoutes'));
+    app.use('/api/v1/audit', require('./routes/auditRoutes'));
+    app.use('/api/v1/reports', require('./routes/reportRoutes'));
+    app.use('/api/v1/notifications', require('./routes/notificationRoutes'));
+    app.use('/api/v1/calendar', require('./routes/calendarRoutes'));
+    app.use('/api/v1/files', require('./routes/fileRoutes'));
+    app.use('/api/v1/config', configRoutes);
+    app.use('/api/v1/automation', require('./routes/automationRoutes'));
+    app.use('/api/v1/analytics', require('./routes/analyticsRoutes'));
 
     // Legacy route support
     app.use('/api', lectureRoutes);

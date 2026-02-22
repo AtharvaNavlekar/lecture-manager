@@ -16,9 +16,7 @@ http://localhost:5173
 ```
 
 ### 2. Login Credentials
-- **Admin**: admin@college.edu / admin123
-- **HOD**: it.prof1@college.edu / teacher123
-- **Teacher**: it.prof2@college.edu / teacher123
+**SECURITY NOTICE**: Default credentials must be overridden immediately upon first login. The system requires administrators to change default passwords on startup in production.
 
 ---
 

@@ -39,7 +39,7 @@ const SubjectManager = () => {
     const [newSubject, setNewSubject] = useState({ name: '', code: '', class_year: 'SY' });
 
     // Dynamic config
-    const { data: academicYears } = useAcademicYears();
+    const { data: academicYears, loading: yearsLoading } = useAcademicYears();
     const { data: departments } = useDepartments();
 
     // Import State
@@ -60,14 +60,19 @@ const SubjectManager = () => {
     // Filter & Search State
     const [searchTerm, setSearchTerm] = useState('');
     const [classFilter, setClassFilter] = useState('All');
-    const [deptFilter, setDeptFilter] = useState('All');
+    // If admin is NOT detected, default to user's department
+    const [deptFilter, setDeptFilter] = useState(user.role === 'admin' ? 'All' : user.department);
 
     // Filter Logic
     const filteredSubjects = subjects.filter(subject => {
         const matchesSearch = subject.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             subject.code.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesClass = classFilter === 'All' || subject.class_year === classFilter;
-        const matchesDept = deptFilter === 'All' || subject.department === deptFilter;
+        // If admin, check filter. If teacher/HOD, check against their own department
+        const matchesDept = user.role === 'admin'
+            ? (deptFilter === 'All' || subject.department === deptFilter)
+            : subject.department === user.department;
+
         return matchesSearch && matchesClass && matchesDept;
     });
 
@@ -353,15 +358,17 @@ const SubjectManager = () => {
 
                 {/* Filters */}
                 <div className="flex gap-2 w-full md:w-auto">
-                    {/* Dept Filter */}
-                    <div className="relative w-full md:w-48 z-[50]">
-                        <CustomSelect
-                            options={[{ value: 'All', label: 'All Depts' }, ...(departments || []).map(d => ({ value: d.name, label: d.name }))]}
-                            value={deptFilter}
-                            onChange={(e) => setDeptFilter(e.target.value)}
-                            className="h-full bg-[#0B1221] border-white/10 py-0"
-                        />
-                    </div>
+                    {/* Dept Filter - Only show for ADMIN */}
+                    {user.role === 'admin' && (
+                        <div className="relative w-full md:w-48 z-[50]">
+                            <CustomSelect
+                                options={[{ value: 'All', label: 'All Depts' }, ...(departments || []).map(d => ({ value: d.name, label: d.name }))]}
+                                value={deptFilter}
+                                onChange={(e) => setDeptFilter(e.target.value)}
+                                className="h-full bg-[#0B1221] border-white/10 py-0"
+                            />
+                        </div>
+                    )}
                     {/* Class Filter */}
                     <div className="relative w-full md:w-40 z-[50]">
                         <CustomSelect
@@ -512,9 +519,11 @@ const SubjectManager = () => {
                                     initial={{ scale: 0.9, opacity: 0 }}
                                     animate={{ scale: 1, opacity: 1 }}
                                     exit={{ scale: 0.9, opacity: 0 }}
-                                    className="bg-[#0f172a] border border-white/10 rounded-3xl w-full max-w-md p-6 shadow-2xl relative overflow-hidden"
+                                    className="bg-[#0f172a] border border-white/10 rounded-3xl w-full max-w-md p-6 shadow-2xl relative"
                                 >
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                                    <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl"></div>
+                                    </div>
 
                                     <h3 className="text-white font-bold text-xl mb-4 relative z-10 flex items-center gap-2">
                                         <Books className="text-indigo-400" weight="duotone" size={24} /> New Subject
@@ -563,9 +572,11 @@ const SubjectManager = () => {
                                     initial={{ scale: 0.9, opacity: 0 }}
                                     animate={{ scale: 1, opacity: 1 }}
                                     exit={{ scale: 0.9, opacity: 0 }}
-                                    className="bg-[#0f172a] border border-white/10 rounded-3xl w-full max-w-md p-6 shadow-2xl relative overflow-hidden"
+                                    className="bg-[#0f172a] border border-white/10 rounded-3xl w-full max-w-md p-6 shadow-2xl relative"
                                 >
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                                    <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl"></div>
+                                    </div>
 
                                     <h3 className="text-white font-bold text-xl mb-4 relative z-10 flex items-center gap-2">
                                         <ListBullets className="text-emerald-400" weight="duotone" size={24} /> Add Unit

@@ -34,25 +34,49 @@ const Attendance = () => {
 
     useEffect(() => {
         // Ensure params are valid before loading
-        if (id && classYear) {
+        // Wait for user context to be ready
+        console.log("Attendance: useEffect triggered", { id, classYear, user: !!user });
+        if (id && classYear && user) {
             loadData();
         }
-    }, [id, classYear]); // FIXED: Added classYear to dependencies
+
+        // Safety timeout to prevent infinite loading
+        const timer = setTimeout(() => {
+            setLoading(prev => {
+                if (prev) {
+                    console.warn("Attendance: Force stopping loading due to timeout");
+                    toast.error("Loading timed out. Please try refreshing.");
+                    return false;
+                }
+                return prev;
+            });
+        }, 8000); // 8 seconds timeout
+
+        return () => clearTimeout(timer);
+    }, [id, classYear, user]); // Added user to dependencies
 
     const loadData = async () => {
+        console.log("Attendance: loadData started", { id, classYear });
         // Safety check: Don't proceed if params are missing
         if (!id || !classYear) {
+            console.warn("Attendance: Missing params", { id, classYear });
             setLoading(false);
             return;
         }
 
         try {
             setLoading(true);
+            console.log("Attendance: Fetching data from API...");
 
             const [rosterRes, aiRes] = await Promise.all([
                 api.get(`/attendance/roster/${id}/${classYear}`),
-                api.get('/ai/forecast').catch(() => ({ data: { predictions: [] } }))
+                api.get('/ai/forecast').catch(err => {
+                    console.warn("Attendance: AI forecast failed", err);
+                    return { data: { predictions: [] } };
+                })
             ]);
+
+            console.log("Attendance: Data fetched", { rosterSize: rosterRes.data?.roster?.length || rosterRes.data?.length });
 
             // Handle new response format { roster, lecture }
             const students = rosterRes.data.roster || rosterRes.data;
@@ -74,8 +98,9 @@ const Attendance = () => {
             }
             setPredictions(predMap);
 
-            // Fetch Syllabus if subject is known
-            if (details.subject) {
+            // Fetch Syllabus if subject is known and user is available
+            if (details.subject && user?.department) {
+                console.log("Attendance: Fetching syllabus for", details.subject);
                 const subRes = await api.get(`/subjects?department=${user.department}`);
                 const subject = subRes.data.subjects?.find(s => details.subject.includes(s.name) || s.name.includes(details.subject));
 
@@ -87,21 +112,11 @@ const Attendance = () => {
 
             setLoading(false);
         } catch (e) {
-            logger.error(e);
+            logger.error("Attendance: Load failed", e);
+            console.error("Attendance: Load failed", e);
+            toast.error("Failed to load attendance data");
             setLoading(false);
         }
-    };
-
-    const updateLectureTopic = async (topicTitle, topicId) => {
-        const newDetails = { ...lectureDetails, topic_covered: topicTitle, syllabus_topic_id: topicId };
-        setLectureDetails(newDetails);
-        try {
-            await api.post('/lectures/update-details', {
-                id,
-                topic_covered: topicTitle,
-                syllabus_topic_id: topicId
-            });
-        } catch (e) { logger.error("Failed to save topic"); }
     };
 
     const markStudent = async (studentId, status) => {
@@ -163,7 +178,10 @@ const Attendance = () => {
 
         try {
             await api.post('/attendance/mark-all', { lecture_id: id, class_year: classYear, user_id: user.id });
-        } catch (e) { logger.error(e); }
+        } catch (e) {
+            logger.error(e);
+            toast.error("Failed to mark all present");
+        }
     };
 
     // Derived State
@@ -181,8 +199,10 @@ const Attendance = () => {
         return s.status === filter;
     });
 
+    console.log("Attendance: Rendering", { loading, rosterCount: roster.length, id });
+
     if (loading) return (
-        <div className="fixed inset-0 bg-slate-950 flex items-center justify-center overflow-hidden z-50">
+        <div className="fixed inset-0 bg-slate-950 flex items-center justify-center overflow-hidden z-[100]">
             <SandyLoader text="Loading students..." />
         </div>
     );
@@ -204,7 +224,16 @@ const Attendance = () => {
                             <ArrowLeft weight="bold" size={20} />
                         </button>
                         <div>
-                            <h1 className="text-3xl font-bold text-white tracking-tight">Live Classroom</h1>
+                            <div className="flex items-center gap-3">
+                                <h1 className="text-3xl font-bold text-white tracking-tight">Live Classroom</h1>
+                                <button
+                                    onClick={loadData}
+                                    className="p-1.5 text-slate-500 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-lg transition-colors"
+                                    title="Refresh List"
+                                >
+                                    <Clock size={16} weight="bold" className="animate-[spin_4s_linear_infinite_paused] hover:animate-[spin_1s_linear_infinite]" />
+                                </button>
+                            </div>
                             <div className="flex items-center gap-3 mt-1">
                                 <span className="bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wider border border-indigo-500/20">
                                     {classYear}

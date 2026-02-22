@@ -1,5 +1,5 @@
 // CSV Export utility
-const { Parser } = require('json2csv');
+const { stringify } = require('csv-stringify/sync');
 
 /**
  * Export data to CSV format
@@ -9,8 +9,19 @@ const { Parser } = require('json2csv');
  */
 const exportToCSV = (data, fields) => {
     try {
-        const json2csvParser = new Parser({ fields });
-        const csv = json2csvParser.parse(data);
+        const processedData = data.map(row => {
+            const newRow = {};
+            fields.forEach(f => {
+                if (typeof f.value === 'function') {
+                    newRow[f.label] = f.value(row);
+                } else {
+                    newRow[f.label] = row[f.value];
+                }
+            });
+            return newRow;
+        });
+
+        const csv = stringify(processedData, { header: true });
 
         console.log(`📊 Exported ${data.length} rows to CSV`);
         return csv;

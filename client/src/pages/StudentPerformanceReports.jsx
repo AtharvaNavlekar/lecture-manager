@@ -1,6 +1,7 @@
 import logger from '@/utils/logger';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 import api from '../utils/api';
 import { motion } from 'framer-motion';
 import {
@@ -29,6 +30,7 @@ import CustomSelect from '../components/ui/CustomSelect';
 import { useAcademicYears, useDepartments } from '../hooks/useConfig';
 
 const StudentPerformanceReports = () => {
+    const { user } = useContext(AuthContext);
     const [students, setStudents] = useState([]);
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -36,7 +38,7 @@ const StudentPerformanceReports = () => {
 
     // Filters
     const [classFilter, setClassFilter] = useState('All');
-    const [deptFilter, setDeptFilter] = useState('All');
+    const [deptFilter, setDeptFilter] = useState(user?.role === 'admin' ? 'All' : (user?.department || 'All'));
 
     // Config Hooks
     const { data: academicYears } = useAcademicYears();
@@ -72,14 +74,18 @@ const StudentPerformanceReports = () => {
         const matchesClass = classFilter === 'All' || student.class_year === classFilter;
 
         // Match Department
-        let matchesDept = deptFilter === 'All';
-        if (!matchesDept) {
+        // If admin, use selected filter. If teacher, force their department.
+        const targetDept = user?.role === 'admin' ? deptFilter : user?.department;
+
+        let matchesDept = targetDept === 'All';
+
+        if (!matchesDept && targetDept) {
             // Try explicit department field, or fall back to deriving from Roll No (e.g., "BSCIT-FY-001" -> "BSCIT")
             const studentDept = student.department || (student.roll_no ? student.roll_no.split('-')[0] : '');
 
             if (studentDept) {
                 // Normalize both for comparison (remove dots, spaces, uppercase)
-                const cleanFilter = deptFilter.replace(/[.\s]/g, '').toUpperCase(); // e.g., "B.Sc. IT" -> "BSCIT"
+                const cleanFilter = targetDept.replace(/[.\s]/g, '').toUpperCase(); // e.g., "B.Sc. IT" -> "BSCIT"
                 const cleanStudentDept = studentDept.replace(/[.\s]/g, '').toUpperCase(); // e.g., "BSCIT" -> "BSCIT"
 
                 // Check if they match or if one contains the other (handling "IT" vs "B.Sc. IT")
@@ -117,18 +123,20 @@ const StudentPerformanceReports = () => {
                                 className="w-full bg-[#0B1221] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                             />
                         </div>
-                        <div className="grid grid-cols-2 gap-2">
-                            <CustomSelect
-                                options={[{ value: 'All', label: 'All Depts' }, ...(departments || []).map(d => ({ value: d.code, label: d.code }))]}
-                                value={deptFilter}
-                                onChange={(e) => setDeptFilter(e.target.value)}
-                                className="bg-[#0B1221] border-white/10 py-1"
-                            />
+                        <div className="flex gap-2">
+                            {user?.role === 'admin' && (
+                                <CustomSelect
+                                    options={[{ value: 'All', label: 'All Depts' }, ...(departments || []).map(d => ({ value: d.code, label: d.code }))]}
+                                    value={deptFilter}
+                                    onChange={(e) => setDeptFilter(e.target.value)}
+                                    className="bg-[#0B1221] border-white/10 py-1 flex-1"
+                                />
+                            )}
                             <CustomSelect
                                 options={[{ value: 'All', label: 'All Years' }, ...(academicYears || []).map(y => ({ value: y.code, label: y.code }))]}
                                 value={classFilter}
                                 onChange={(e) => setClassFilter(e.target.value)}
-                                className="bg-[#0B1221] border-white/10 py-1"
+                                className="bg-[#0B1221] border-white/10 py-1 flex-1"
                             />
                         </div>
                     </div>

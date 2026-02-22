@@ -24,21 +24,11 @@ module.exports = {
     },
 
     production: {
-        client: 'sqlite3',
-        connection: {
-            filename: process.env.DATABASE_PATH || path.join(__dirname, 'database.sqlite')
-        },
-        useNullAsDefault: true,
-        migrations: {
-            directory: path.join(__dirname, 'migrations'),
-            tableName: 'knex_migrations'
-        },
+        client: 'pg',
+        connection: process.env.DATABASE_URL,
         pool: {
             min: 2,
-            max: 10,
-            afterCreate: (conn, cb) => {
-                conn.run('PRAGMA foreign_keys = ON', cb);
-            }
+            max: 10
         }
     }
 };

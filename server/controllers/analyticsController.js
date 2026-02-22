@@ -1,9 +1,14 @@
 const { db } = require('../config/db');
+const cache = require('../utils/cache');
 
 // Get aggregated HOD analytics
 const getHodAnalytics = (req, res) => {
     const teacherId = req.userId;
     const userRole = req.userRole;
+
+    const cacheKey = `hod_analytics_${teacherId}_${userRole}`;
+    const cached = cache.get(cacheKey);
+    if (cached) return res.json(cached);
 
     console.log(`[Analytics] Endpoint hit - userId: ${teacherId}, userRole: ${userRole}`);
 
@@ -54,7 +59,9 @@ const getHodAnalytics = (req, res) => {
                 };
 
                 console.log('[Analytics] Admin result:', analytics);
-                res.json({ success: true, analytics });
+                const response = { success: true, analytics };
+                cache.set(cacheKey, response);
+                res.json(response);
             });
         });
         return;
@@ -132,7 +139,9 @@ const getHodAnalytics = (req, res) => {
                     };
 
                     console.log('[Analytics] Returning:', analytics);
-                    res.json({ success: true, analytics });
+                    const response = { success: true, analytics };
+                    cache.set(cacheKey, response);
+                    res.json(response);
                 });
             });
         });
