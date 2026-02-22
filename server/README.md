@@ -725,13 +725,10 @@ npm run migrate:status
 npm run migrate:make migration_name
 ```
 
-### WAL Mode (Recommended)
+### WAL Mode (Programmatic)
 
-```bash
-sqlite3 database.sqlite "PRAGMA journal_mode=WAL;"
-```
-
-Benefits:
+WAL (Write-Ahead Logging) mode is enabled automatically on server startup in `config/db.js`.
+This improves concurrent read/write performance significantly.:
 - Better concurrency
 - Improved performance
 - Reduced locking
@@ -1060,7 +1057,7 @@ describe('Leave Controller', () => {
 - [ ] Set `NODE_ENV=production`
 - [ ] Use strong `JWT_SECRET`
 - [ ] Configure email service
-- [ ] Enable database WAL mode
+- [x] Database WAL mode programmed in config/db.js
 - [ ] Setup log rotation
 - [ ] Configure HTTPS
 - [ ] Enable rate limiting
@@ -1116,8 +1113,7 @@ docker run -p 3000:3000 lecture-manager-server
 
 #### Database locked
 ```bash
-# Enable WAL mode
-sqlite3 database.sqlite "PRAGMA journal_mode=WAL;"
+# Already handled programmatically on startup by config/db.js
 ```
 
 #### Port in use

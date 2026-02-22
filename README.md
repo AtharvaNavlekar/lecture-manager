@@ -202,12 +202,9 @@ Lecture Manager is a comprehensive enterprise-grade college management system de
 - **UI Libraries**:
   - Framer Motion 12.29.2 (animations)
   - Lucide React 0.562.0 (icons)
-  - Phosphor Icons 2.1.10 (additional icons)
   - Lottie React 2.4.1 (animations)
 - **Charts & Visualization**:
   - Recharts 3.6.0
-  - Chart.js 4.5.1
-  - React Chartjs-2 5.3.1
 - **HTTP Client**: Axios 1.13.2
 - **Notifications**: React Hot Toast 2.6.0
 - **Authentication**: JWT Decode 4.0.0
@@ -232,7 +229,7 @@ Lecture Manager is a comprehensive enterprise-grade college management system de
 - **Utilities**: 
   - UUID 13.0.0
   - dotenv 16.3.1
-  - json2csv 6.0.0-alpha.2
+  - csv-stringify 6.6.0
 
 ### Development Tools
 - **Process Manager**: PM2 6.0.14
@@ -324,10 +321,9 @@ lecture-manager/
 │   │   ├── healthCheck.js           # Health check utilities
 │   │   ├── gracefulShutdown.js      # Graceful shutdown
 │   │   └── ... (6 more utils)
-│   ├── scripts/                     # 77 Utility Scripts
+│   ├── scripts/                     # Essential Core Scripts
 │   │   ├── setup/                   # Database initialization
 │   │   ├── maintenance/             # Health checks
-│   │   └── archive/                 # Old debug scripts
 │   ├── __tests__/                   # Jest test suites
 │   ├── logs/                        # Application logs
 │   ├── backups/                     # Database backups
@@ -723,7 +719,7 @@ NODE_ENV=development
 DATABASE_URL=./database.sqlite
 
 # JWT Authentication
-JWT_SECRET=your-secret-key-change-in-production
+JWT_SECRET=generate-a-strong-random-string-at-least-32-chars
 JWT_EXPIRY=7d
 
 # Email Configuration (optional)
@@ -808,7 +804,7 @@ LOG_FILE=./logs/app.log
 - [ ] Change default user credentials
 - [ ] Set strong `JWT_SECRET`
 - [ ] Set `NODE_ENV=production`
-- [ ] Enable database WAL mode: `PRAGMA journal_mode=WAL`
+- [x] Database WAL mode programmed in config/db.js
 - [ ] Configure email service (SMTP)
 - [ ] Setup HTTPS/SSL certificates
 - [ ] Configure reverse proxy (nginx recommended)
@@ -862,10 +858,7 @@ NODE_ENV=production npm start
 
 ### Performance Optimization
 
-1. **Enable Database WAL Mode**
-   ```bash
-   sqlite3 server/database.sqlite "PRAGMA journal_mode=WAL;"
-   ```
+   # Already handled programmatically on startup by config/db.js
 
 2. **Frontend Optimization**
    - Code splitting enabled (Vite)
@@ -898,12 +891,9 @@ START_DEMO.bat
 
 #### Database locked error
 ```bash
-# Enable WAL mode
-sqlite3 server/database.sqlite "PRAGMA journal_mode=WAL;"
-
-# Or delete WAL files if corrupted
-cd server
-del database.sqlite-wal
+# Delete WAL files if corrupted
+del server\database.sqlite-wal
+del server\database.sqlite-shm
 del database.sqlite-shm
 ```
 
