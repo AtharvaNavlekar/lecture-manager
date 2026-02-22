@@ -2,17 +2,12 @@ import axios from 'axios';
 
 const api = axios.create({
     baseURL: '/api/v1',
+    withCredentials: true,
     headers: {}
 });
 
 api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    } else {
-        // Only warn, don't block - let the server decide
-        console.warn(`[API] Warning: No token found for ${config.url}`);
-    }
+    // Cookie handles auth automatically!
     return config;
 });
 

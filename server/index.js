@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const path = require('path');
 const { db, initDB } = require('./config/db');
 
@@ -43,7 +44,11 @@ app.use(helmet({
 }));
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  credentials: true
+}));
+app.use(cookieParser());
 app.use(bodyParser.json({ limit: '50mb' }));
 
 // Request logging middleware
@@ -89,7 +94,7 @@ async function startServer() {
 
     // Step 2: Initialize database
     logger.info('📦 Initializing database...');
-    initDB();
+    await initDB();
 
     // Step 3: TODO: Run database migrations (after packages are installed)
     // const migrationService = require('./services/migrationService');

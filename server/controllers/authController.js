@@ -65,7 +65,15 @@ const login = (req, res) => {
 
         const { password: _, ...safeUser } = user;
         safeUser.role = role; // Add role to user object
-        res.json({ success: true, token, user: safeUser });
+
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 24 * 60 * 60 * 1000 // 24 hours
+        });
+
+        res.json({ success: true, user: safeUser });
     });
 };
 
@@ -106,7 +114,15 @@ const register = (req, res) => {
 
                         // Auto-login after register
                         const token = jwt.sign({ id: this.lastID, role: 'teacher', department }, SECRET, { expiresIn: '24h' });
-                        res.status(201).json({ success: true, token, role: 'teacher', user: { id: this.lastID, name, email, department } });
+
+                        res.cookie('token', token, {
+                            httpOnly: true,
+                            secure: process.env.NODE_ENV === 'production',
+                            sameSite: 'strict',
+                            maxAge: 24 * 60 * 60 * 1000 // 24 hours
+                        });
+
+                        res.status(201).json({ success: true, role: 'teacher', user: { id: this.lastID, name, email, department } });
                     }
                 );
             } catch (e) {
@@ -116,4 +132,18 @@ const register = (req, res) => {
     });
 };
 
-module.exports = { login, register };
+const logout = (req, res) => {
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+    });
+    res.json({ success: true, message: 'Logged out successfully' });
+};
+
+const me = (req, res) => {
+    // Requires verifyToken middleware
+    res.json({ success: true, user: req.user });
+};
+
+module.exports = { login, register, logout, me };

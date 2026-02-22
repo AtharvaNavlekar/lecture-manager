@@ -1,20 +1,22 @@
 const jwt = require('jsonwebtoken');
 
 const verifyToken = (req, res, next) => {
-    let token = req.headers['authorization'];
+    let token = req.cookies?.token || req.headers['authorization'];
 
     // Check query param (for SSE)
     if (!token && req.query.token) {
-        token = 'Bearer ' + req.query.token;
+        token = req.query.token;
     }
 
     if (!token) {
         return res.status(403).json({ success: false, message: 'No token provided.' });
     }
 
-    // Expecting format: "Bearer <token>"
-    const bearer = token.split(' ');
-    const tokenValue = bearer[1];
+    // Expecting format: "Bearer <token>" or raw token from cookie
+    let tokenValue = token;
+    if (token.startsWith && token.startsWith('Bearer ')) {
+        tokenValue = token.split(' ')[1];
+    }
 
     if (!tokenValue) {
         return res.status(403).json({ success: false, message: 'Malformed token.' });

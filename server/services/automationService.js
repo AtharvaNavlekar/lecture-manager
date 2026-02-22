@@ -2,7 +2,12 @@ const cron = require('node-cron');
 const { db } = require('../config/db');
 const { promisify } = require('util');
 
-const dbRun = promisify(db.run.bind(db));
+const dbRun = (sql, params = []) => new Promise((resolve, reject) => {
+    db.run(sql, params, function (err) {
+        if (err) reject(err);
+        else resolve({ changes: this.changes, lastID: this.lastID });
+    });
+});
 const dbAll = promisify(db.all.bind(db));
 
 class AutomationService {
@@ -52,12 +57,17 @@ class AutomationService {
         try {
             console.log(`⏰ Auto-approving leave request ${leave.id} (30 min timeout)`);
 
-            await dbRun(`
+            const result = await dbRun(`
                 UPDATE leave_requests
                 SET status = 'auto-approved',
                     hod_decision_at = CURRENT_TIMESTAMP
-                WHERE id = ?
+                WHERE id = ? AND status = 'pending'
             `, [leave.id]);
+
+            if (result.changes === 0) {
+                console.log(`⚠️ Leave ${leave.id} already processed, skipping`);
+                return;
+            }
 
             // TODO: Send email notification
             console.log(`✅ Leave ${leave.id} auto-approved`);
@@ -140,13 +150,15 @@ class AutomationService {
             if (available.length > 0) {
                 const substitute = available[0];
 
-                await dbRun(`
+                const result = await dbRun(`
                     UPDATE substitute_assignments
                     SET substitute_teacher_id = ?,
                         status = 'auto-assigned',
                         assignment_type = 'auto'
-                    WHERE id = ?
+                    WHERE id = ? AND status = 'pending'
                 `, [substitute.id, assignment.id]);
+
+                if (result.changes === 0) return; // Prevent double assignment
 
                 await dbRun(`
                     UPDATE teachers
@@ -160,12 +172,14 @@ class AutomationService {
             } else {
                 console.log(`⚠️ No available teacher for assignment ${assignment.id}`);
 
-                await dbRun(`
+                const result = await dbRun(`
                     UPDATE substitute_assignments
                     SET status = 'unassigned',
-                        syllabus_notes = 'No available teachers found'
-                    WHERE id = ?
+                        notes = 'No available teachers found'
+                    WHERE id = ? AND status = 'pending'
                 `, [assignment.id]);
+
+                if (result.changes === 0) return;
             }
         } catch (err) {
             console.error(`Error auto-assigning substitute for ${assignment.id}:`, err);

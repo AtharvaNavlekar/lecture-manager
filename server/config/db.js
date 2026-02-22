@@ -10,13 +10,16 @@ const db = new sqlite3.Database(dbPath, (err) => {
 
 // Configure for performance
 db.configure('busyTimeout', 3000);
-db.run("PRAGMA journal_mode = WAL;");
-db.run("PRAGMA synchronous = NORMAL;");
 
-const initDB = () => {
-    db.serialize(() => {
-        // 1. Teachers Table (Added password hash support)
-        db.run(`CREATE TABLE IF NOT EXISTS teachers (
+const initDB = () => new Promise((resolve, reject) => {
+    db.run("PRAGMA journal_mode = WAL;", (err1) => {
+        if (err1) return reject(err1);
+        db.run("PRAGMA synchronous = NORMAL;", (err2) => {
+            if (err2) return reject(err2);
+
+            db.serialize(() => {
+                // 1. Teachers Table (Added password hash support)
+                db.run(`CREATE TABLE IF NOT EXISTS teachers (
             id INTEGER PRIMARY KEY, 
             name TEXT, 
             department TEXT, 
@@ -27,32 +30,32 @@ const initDB = () => {
             password TEXT
         )`);
 
-        // Migration for existing databases
-        db.run("ALTER TABLE teachers ADD COLUMN is_acting_hod INTEGER DEFAULT 0", (err) => {
-            if (!err) console.log("✨ Migrated: Added is_acting_hod column");
-        });
+                // Migration for existing databases
+                db.run("ALTER TABLE teachers ADD COLUMN is_acting_hod INTEGER DEFAULT 0", (err) => {
+                    if (!err) console.log("✨ Migrated: Added is_acting_hod column");
+                });
 
-        // Migration for announcements
-        db.run("ALTER TABLE announcements ADD COLUMN department TEXT", (err) => {
-            if (!err) console.log("✨ Migrated: Added announcements.department");
-        });
-        db.run("ALTER TABLE announcements ADD COLUMN expires_at DATETIME", (err) => {
-            if (!err) console.log("✨ Migrated: Added announcements.expires_at");
-        });
-        db.run("ALTER TABLE announcements ADD COLUMN is_pinned INTEGER DEFAULT 0", (err) => {
-            if (!err) console.log("✨ Migrated: Added announcements.is_pinned");
-        });
+                // Migration for announcements
+                db.run("ALTER TABLE announcements ADD COLUMN department TEXT", (err) => {
+                    if (!err) console.log("✨ Migrated: Added announcements.department");
+                });
+                db.run("ALTER TABLE announcements ADD COLUMN expires_at DATETIME", (err) => {
+                    if (!err) console.log("✨ Migrated: Added announcements.expires_at");
+                });
+                db.run("ALTER TABLE announcements ADD COLUMN is_pinned INTEGER DEFAULT 0", (err) => {
+                    if (!err) console.log("✨ Migrated: Added announcements.is_pinned");
+                });
 
-        // Migration for notifications
-        db.run("ALTER TABLE notifications ADD COLUMN priority TEXT DEFAULT 'normal'", (err) => {
-            if (!err) console.log("✨ Migrated: Added notifications.priority");
-        });
-        db.run("ALTER TABLE notifications ADD COLUMN action_url TEXT", (err) => {
-            if (!err) console.log("✨ Migrated: Added notifications.action_url");
-        });
+                // Migration for notifications
+                db.run("ALTER TABLE notifications ADD COLUMN priority TEXT DEFAULT 'normal'", (err) => {
+                    if (!err) console.log("✨ Migrated: Added notifications.priority");
+                });
+                db.run("ALTER TABLE notifications ADD COLUMN action_url TEXT", (err) => {
+                    if (!err) console.log("✨ Migrated: Added notifications.action_url");
+                });
 
-        // 2. Lectures Table
-        db.run(`CREATE TABLE IF NOT EXISTS lectures (
+                // 2. Lectures Table
+                db.run(`CREATE TABLE IF NOT EXISTS lectures (
             id TEXT PRIMARY KEY, 
             teacher_id INTEGER, 
             scheduled_teacher_id INTEGER, 
@@ -71,21 +74,21 @@ const initDB = () => {
             attendance_count INTEGER DEFAULT 0
         )`);
 
-        // Migration for lectures
-        db.run("ALTER TABLE lectures ADD COLUMN division TEXT", (err) => {
-            if (!err) console.log("✨ Migrated: Added lectures.division");
-        });
+                // Migration for lectures
+                db.run("ALTER TABLE lectures ADD COLUMN division TEXT", (err) => {
+                    if (!err) console.log("✨ Migrated: Added lectures.division");
+                });
 
-        db.run("ALTER TABLE lectures ADD COLUMN day_of_week TEXT", (err) => {
-            if (!err) console.log("✨ Migrated: Added lectures.day_of_week");
-        });
+                db.run("ALTER TABLE lectures ADD COLUMN day_of_week TEXT", (err) => {
+                    if (!err) console.log("✨ Migrated: Added lectures.day_of_week");
+                });
 
-        db.run("ALTER TABLE lectures ADD COLUMN time_slot TEXT", (err) => {
-            if (!err) console.log("✨ Migrated: Added lectures.time_slot");
-        });
+                db.run("ALTER TABLE lectures ADD COLUMN time_slot TEXT", (err) => {
+                    if (!err) console.log("✨ Migrated: Added lectures.time_slot");
+                });
 
-        // 3. Notifications Table
-        db.run(`CREATE TABLE IF NOT EXISTS notifications (
+                // 3. Notifications Table
+                db.run(`CREATE TABLE IF NOT EXISTS notifications (
             id INTEGER PRIMARY KEY AUTOINCREMENT, 
             target_teacher_id INTEGER, 
             lecture_id INTEGER, 
@@ -97,8 +100,8 @@ const initDB = () => {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
 
-        // 4. Students Table
-        db.run(`CREATE TABLE IF NOT EXISTS students (
+                // 4. Students Table
+                db.run(`CREATE TABLE IF NOT EXISTS students (
             id INTEGER PRIMARY KEY, 
             name TEXT, 
             roll_no TEXT,
@@ -107,8 +110,8 @@ const initDB = () => {
             photo_url TEXT
         )`);
 
-        // 5. Attendance Records Table
-        db.run(`CREATE TABLE IF NOT EXISTS attendance_records (
+                // 5. Attendance Records Table
+                db.run(`CREATE TABLE IF NOT EXISTS attendance_records (
             id INTEGER PRIMARY KEY AUTOINCREMENT, 
             lecture_id TEXT, 
             student_id INTEGER, 
@@ -118,16 +121,16 @@ const initDB = () => {
             marked_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
 
-        // 6. Settings Table
-        db.run(`CREATE TABLE IF NOT EXISTS settings (
+                // 6. Settings Table
+                db.run(`CREATE TABLE IF NOT EXISTS settings (
             key TEXT PRIMARY KEY,
             value TEXT NOT NULL,
             description TEXT,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
 
-        // 7. Files Table
-        db.run(`CREATE TABLE IF NOT EXISTS files (
+                // 7. Files Table
+                db.run(`CREATE TABLE IF NOT EXISTS files (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             filename TEXT NOT NULL,
             original_name TEXT NOT NULL,
@@ -144,8 +147,8 @@ const initDB = () => {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
 
-        // 8. Resources Table
-        db.run(`CREATE TABLE IF NOT EXISTS resources (
+                // 8. Resources Table
+                db.run(`CREATE TABLE IF NOT EXISTS resources (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             teacher_id INTEGER,
             title TEXT NOT NULL,
@@ -160,8 +163,8 @@ const initDB = () => {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
 
-        // 9. Leave Requests Table
-        db.run(`CREATE TABLE IF NOT EXISTS leave_requests (
+                // 9. Leave Requests Table
+                db.run(`CREATE TABLE IF NOT EXISTS leave_requests (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             teacher_id INTEGER NOT NULL,
             start_date TEXT NOT NULL,
@@ -179,42 +182,42 @@ const initDB = () => {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
 
-        // Migration for leave_requests
-        db.run("ALTER TABLE leave_requests ADD COLUMN leave_type TEXT DEFAULT 'casual'", (err) => {
-            if (!err) console.log("✨ Migrated: Added leave_requests.leave_type");
-        });
+                // Migration for leave_requests
+                db.run("ALTER TABLE leave_requests ADD COLUMN leave_type TEXT DEFAULT 'casual'", (err) => {
+                    if (!err) console.log("✨ Migrated: Added leave_requests.leave_type");
+                });
 
-        db.run("ALTER TABLE leave_requests ADD COLUMN notes TEXT", (err) => {
-            if (!err) console.log("✨ Migrated: Added leave_requests.notes");
-        });
+                db.run("ALTER TABLE leave_requests ADD COLUMN notes TEXT", (err) => {
+                    if (!err) console.log("✨ Migrated: Added leave_requests.notes");
+                });
 
-        db.run("ALTER TABLE leave_requests ADD COLUMN affected_lectures TEXT", (err) => {
-            if (!err) console.log("✨ Migrated: Added leave_requests.affected_lectures");
-        });
+                db.run("ALTER TABLE leave_requests ADD COLUMN affected_lectures TEXT", (err) => {
+                    if (!err) console.log("✨ Migrated: Added leave_requests.affected_lectures");
+                });
 
-        db.run("ALTER TABLE leave_requests ADD COLUMN submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP", (err) => {
-            if (!err) console.log("✨ Migrated: Added leave_requests.submitted_at");
-        });
+                db.run("ALTER TABLE leave_requests ADD COLUMN submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP", (err) => {
+                    if (!err) console.log("✨ Migrated: Added leave_requests.submitted_at");
+                });
 
-        db.run("ALTER TABLE leave_requests ADD COLUMN hod_decision_at DATETIME", (err) => {
-            if (!err) console.log("✨ Migrated: Added leave_requests.hod_decision_at");
-        });
+                db.run("ALTER TABLE leave_requests ADD COLUMN hod_decision_at DATETIME", (err) => {
+                    if (!err) console.log("✨ Migrated: Added leave_requests.hod_decision_at");
+                });
 
-        db.run("ALTER TABLE leave_requests ADD COLUMN denial_reason TEXT", (err) => {
-            if (!err) console.log("✨ Migrated: Added leave_requests.denial_reason");
-        });
+                db.run("ALTER TABLE leave_requests ADD COLUMN denial_reason TEXT", (err) => {
+                    if (!err) console.log("✨ Migrated: Added leave_requests.denial_reason");
+                });
 
-        // HOD-specific leave request fields
-        db.run("ALTER TABLE leave_requests ADD COLUMN is_hod_request INTEGER DEFAULT 0", (err) => {
-            if (!err) console.log("✨ Migrated: Added leave_requests.is_hod_request");
-        });
+                // HOD-specific leave request fields
+                db.run("ALTER TABLE leave_requests ADD COLUMN is_hod_request INTEGER DEFAULT 0", (err) => {
+                    if (!err) console.log("✨ Migrated: Added leave_requests.is_hod_request");
+                });
 
-        db.run("ALTER TABLE leave_requests ADD COLUMN delegate_to TEXT", (err) => {
-            if (!err) console.log("✨ Migrated: Added leave_requests.delegate_to");
-        });
+                db.run("ALTER TABLE leave_requests ADD COLUMN delegate_to TEXT", (err) => {
+                    if (!err) console.log("✨ Migrated: Added leave_requests.delegate_to");
+                });
 
-        // 9b. Substitute Assignments Table (NEW)
-        db.run(`CREATE TABLE IF NOT EXISTS substitute_assignments (
+                // 9b. Substitute Assignments Table (NEW)
+                db.run(`CREATE TABLE IF NOT EXISTS substitute_assignments (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             leave_request_id INTEGER NOT NULL,
             lecture_id TEXT NOT NULL,
@@ -233,11 +236,11 @@ const initDB = () => {
             FOREIGN KEY (original_teacher_id) REFERENCES teachers(id),
             FOREIGN KEY (substitute_teacher_id) REFERENCES teachers(id)
         )`, (err) => {
-            if (!err) console.log("✅ Created substitute_assignments table");
-        });
+                    if (!err) console.log("✅ Created substitute_assignments table");
+                });
 
-        // 10. Assignments Table
-        db.run(`CREATE TABLE IF NOT EXISTS assignments (
+                // 10. Assignments Table
+                db.run(`CREATE TABLE IF NOT EXISTS assignments (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
             description TEXT,
@@ -250,13 +253,13 @@ const initDB = () => {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
 
-        // Migration for assignments - add max_marks
-        db.run("ALTER TABLE assignments ADD COLUMN max_marks INTEGER DEFAULT 100", (err) => {
-            if (!err) console.log("✨ Migrated: Added assignments.max_marks");
-        });
+                // Migration for assignments - add max_marks
+                db.run("ALTER TABLE assignments ADD COLUMN max_marks INTEGER DEFAULT 100", (err) => {
+                    if (!err) console.log("✨ Migrated: Added assignments.max_marks");
+                });
 
-        // 11. Submissions Table
-        db.run(`CREATE TABLE IF NOT EXISTS submissions (
+                // 11. Submissions Table
+                db.run(`CREATE TABLE IF NOT EXISTS submissions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             assignment_id INTEGER NOT NULL,
             student_id INTEGER NOT NULL,
@@ -267,17 +270,17 @@ const initDB = () => {
             feedback TEXT
         )`);
 
-        // Migration for submissions - add marks and status
-        db.run("ALTER TABLE submissions ADD COLUMN marks INTEGER", (err) => {
-            if (!err) console.log("✨ Migrated: Added submissions.marks");
-        });
+                // Migration for submissions - add marks and status
+                db.run("ALTER TABLE submissions ADD COLUMN marks INTEGER", (err) => {
+                    if (!err) console.log("✨ Migrated: Added submissions.marks");
+                });
 
-        db.run("ALTER TABLE submissions ADD COLUMN status TEXT DEFAULT 'pending'", (err) => {
-            if (!err) console.log("✨ Migrated: Added submissions.status");
-        });
+                db.run("ALTER TABLE submissions ADD COLUMN status TEXT DEFAULT 'pending'", (err) => {
+                    if (!err) console.log("✨ Migrated: Added submissions.status");
+                });
 
-        // 12. Announcements Table
-        db.run(`CREATE TABLE IF NOT EXISTS announcements (
+                // 12. Announcements Table
+                db.run(`CREATE TABLE IF NOT EXISTS announcements (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
             message TEXT NOT NULL,
@@ -288,8 +291,8 @@ const initDB = () => {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
 
-        // 13. Subjects Table
-        db.run(`CREATE TABLE IF NOT EXISTS subjects (
+                // 13. Subjects Table
+                db.run(`CREATE TABLE IF NOT EXISTS subjects (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             code TEXT UNIQUE,
@@ -298,8 +301,8 @@ const initDB = () => {
             syllabus_file TEXT
         )`);
 
-        // 14. User Roles Table
-        db.run(`CREATE TABLE IF NOT EXISTS user_roles (
+                // 14. User Roles Table
+                db.run(`CREATE TABLE IF NOT EXISTS user_roles (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             teacher_id INTEGER NOT NULL,
             role TEXT NOT NULL,
@@ -307,8 +310,8 @@ const initDB = () => {
             granted_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
 
-        // 15. Syllabus Topics Table
-        db.run(`CREATE TABLE IF NOT EXISTS syllabus_topics (
+                // 15. Syllabus Topics Table
+                db.run(`CREATE TABLE IF NOT EXISTS syllabus_topics (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             subject_id INTEGER NOT NULL,
             unit_number INTEGER NOT NULL,
@@ -318,27 +321,30 @@ const initDB = () => {
             FOREIGN KEY (subject_id) REFERENCES subjects (id) ON DELETE CASCADE
         )`);
 
-        // Migration for subjects
-        db.run("ALTER TABLE subjects ADD COLUMN class_year TEXT", (err) => {
-            if (!err) console.log("✨ Migrated: Added subjects.class_year");
+                // Migration for subjects
+                db.run("ALTER TABLE subjects ADD COLUMN class_year TEXT", (err) => {
+                    if (!err) console.log("✨ Migrated: Added subjects.class_year");
+                });
+
+
+                // One-time initialization for default settings if empty
+                db.get("SELECT COUNT(*) as count FROM settings", [], (err, row) => {
+                    if (!err && row.count === 0) {
+                        const stmt = db.prepare("INSERT INTO settings (key, value, description) VALUES (?, ?, ?)");
+                        stmt.run('attendance_threshold', '75', 'Minimum attendance percentage required');
+                        stmt.run('grading_scale', 'standard', 'Grading system (standard/gpa)');
+                        stmt.run('notification_frequency', 'daily', 'Frequency of system notifications');
+                        stmt.finalize();
+                        console.log('⚙️  Default settings initialized');
+                    }
+                });
+
+                console.log('✅ Tables Validated');
+                resolve();
+            });
         });
-
-
-        // One-time initialization for default settings if empty
-        db.get("SELECT COUNT(*) as count FROM settings", [], (err, row) => {
-            if (!err && row.count === 0) {
-                const stmt = db.prepare("INSERT INTO settings (key, value, description) VALUES (?, ?, ?)");
-                stmt.run('attendance_threshold', '75', 'Minimum attendance percentage required');
-                stmt.run('grading_scale', 'standard', 'Grading system (standard/gpa)');
-                stmt.run('notification_frequency', 'daily', 'Frequency of system notifications');
-                stmt.finalize();
-                console.log('⚙️  Default settings initialized');
-            }
-        });
-
-        console.log('✅ Tables Validated');
     });
-};
+});
 
 const getDB = () => db;
 

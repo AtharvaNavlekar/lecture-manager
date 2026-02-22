@@ -2,8 +2,8 @@ module.exports = {
   apps: [{
     name: 'lecture-manager-api',
     script: './server/index.js',
-    instances: process.env.NODE_ENV === 'production' ? 'max' : 1,
-    exec_mode: process.env.NODE_ENV === 'production' ? 'cluster' : 'fork',
+    instances: 1, // Restricted to 1 to prevent SQLite DB locks
+    exec_mode: 'fork', // Forced fork mode for single-writer database
     env: {
       NODE_ENV: 'development',
       PORT: 3000,

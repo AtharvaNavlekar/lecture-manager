@@ -30,22 +30,25 @@ export const AuthProvider = ({ children }) => {
     }, [user]);
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
         const storedUser = localStorage.getItem('user');
+        // Fast UI hydration
+        if (storedUser) setUser(JSON.parse(storedUser));
 
-        if (token && storedUser) {
-            try {
-                const decoded = jwtDecode(token);
-                if (decoded.exp * 1000 < Date.now()) {
-                    logout();
-                } else {
-                    setUser(JSON.parse(storedUser));
+        // Verify session with backend HTTP-Only cookie
+        api.get('/auth/me')
+            .then(res => {
+                if (res.data.success && res.data.user) {
+                    localStorage.setItem('user', JSON.stringify(res.data.user));
+                    setUser(res.data.user);
                 }
-            } catch (e) {
+            })
+            .catch(() => {
+                // Session invalid or expired
                 logout();
-            }
-        }
-        setLoading(false);
+            })
+            .finally(() => {
+                setLoading(false);
+            });
     }, []);
 
     // Real-time Notifications (SSE) with Exponential Backoff Retry
@@ -57,19 +60,18 @@ export const AuthProvider = ({ children }) => {
         let retryTimeout = null;
 
         const connectSSE = () => {
-            // Don't attempt if no user, no token, or max retries exceeded
-            if (!user || !localStorage.getItem('token') || retryCount >= maxRetries) {
+            // Don't attempt if no user or max retries exceeded
+            if (!user || retryCount >= maxRetries) {
                 if (retryCount >= maxRetries) {
                     logger.error('🔴 SSE max retries reached. Notifications disabled until refresh.');
                 }
                 return;
             }
 
-            const token = localStorage.getItem('token');
-            const url = `http://localhost:3000/api/notifications/stream?token=${token}`;
+            const url = `http://localhost:3000/api/notifications/stream`;
 
             logger.debug(`🔄 SSE attempt ${retryCount + 1}/${maxRetries}`);
-            eventSource = new EventSource(url);
+            eventSource = new EventSource(url, { withCredentials: true });
 
             eventSource.onopen = () => {
                 logger.debug('🟢 SSE Connected');
@@ -133,7 +135,7 @@ export const AuthProvider = ({ children }) => {
             const res = await api.post('/auth/login', { email, password });
             logger.debug('🔐 Login response:', res.data);
             if (res.data.success) {
-                localStorage.setItem('token', res.data.token);
+                localStorage.removeItem('token'); // clear old tokens
                 localStorage.setItem('user', JSON.stringify(res.data.user));
                 setUser(res.data.user);
                 return { success: true, role: res.data.user.role };
@@ -145,7 +147,10 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const logout = () => {
+    const logout = async () => {
+        try {
+            await api.post('/auth/logout');
+        } catch (e) { } // Best effort
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         setUser(null);
