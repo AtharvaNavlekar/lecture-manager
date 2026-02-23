@@ -50,6 +50,7 @@ const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const DataManagement = lazy(() => import('./pages/DataManagement'));
 const AttendanceLauncher = lazy(() => import('./pages/AttendanceLauncher'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+const Ownership = lazy(() => import('./pages/Ownership'));
 
 import ErrorBoundary from './components/ErrorBoundary';
 import AdminLayout from './components/AdminLayout';
@@ -82,6 +83,7 @@ const AppRoutes = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/ownership" element={<Ownership />} />
 
         {/* ADMIN ROUTES - /admin/* */}
         <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminLayout /></ProtectedRoute>}>

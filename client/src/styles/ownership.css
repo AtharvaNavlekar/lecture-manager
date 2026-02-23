@@ -1,0 +1,1399 @@
+/* ════════════════════════════════════════════
+   OWNERSHIP PAGE — Scoped Styles
+   All selectors scoped under .ownership-page
+════════════════════════════════════════════ */
+
+/* ════════════════════════════════════════════
+   DESIGN TOKENS
+════════════════════════════════════════════ */
+.ownership-page {
+    --black: #080808;
+    --off: #0e0e0e;
+    --panel: #141414;
+    --border: rgba(255, 255, 255, 0.07);
+    --border-em: rgba(0, 255, 120, 0.22);
+    --em: #00ff78;
+    --white: #f5f5f0;
+    --muted: #888;
+    --dim: #444;
+    --nav-h: 64px;
+
+    --bebas: 'Bebas Neue', sans-serif;
+    --serif: 'DM Serif Display', serif;
+    --mono: 'DM Mono', monospace;
+    --syne: 'Syne', sans-serif;
+}
+
+/* ════════════════════════════════════════════
+   BASE
+════════════════════════════════════════════ */
+.ownership-page {
+    font-family: var(--syne);
+    background: var(--black);
+    color: var(--white);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    position: relative;
+
+    background-image:
+        radial-gradient(ellipse 80% 50% at 10% 0%, rgba(0, 255, 120, 0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 90% 100%, rgba(0, 200, 255, 0.05) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 60% at 50% 50%, rgba(0, 255, 120, 0.025) 0%, transparent 70%);
+    background-attachment: fixed;
+}
+
+/* ════════════════════════════════════════════
+   SUBTLE NOISE OVERLAY
+════════════════════════════════════════════ */
+.ownership-page::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.028;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* ════════════════════════════════════════════
+   SCROLLBAR
+════════════════════════════════════════════ */
+.ownership-page::-webkit-scrollbar {
+    width: 3px;
+}
+
+.ownership-page::-webkit-scrollbar-track {
+    background: var(--black);
+}
+
+.ownership-page::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 3px;
+}
+
+.ownership-page::-webkit-scrollbar-thumb:hover {
+    background: var(--white);
+}
+
+/* ════════════════════════════════════════════
+   PROGRESS BAR
+════════════════════════════════════════════ */
+.ownership-page .o-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 2px;
+    background: var(--em);
+    z-index: 10000;
+    width: 0%;
+    transition: width 0.05s linear;
+}
+
+/* ════════════════════════════════════════════
+   NAV — transparent glass
+════════════════════════════════════════════ */
+.ownership-page .o-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 9000;
+    height: var(--nav-h);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 40px;
+    background: rgba(8, 8, 8, 0.35);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    opacity: 0;
+    animation: o-fadeIn 0.7s 0.1s ease forwards;
+}
+
+.ownership-page .nav-logo {
+    font-family: var(--bebas);
+    font-size: 20px;
+    letter-spacing: 0.12em;
+    color: var(--white);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.ownership-page .nav-logo .dot {
+    color: var(--em);
+}
+
+.ownership-page .nav-links {
+    display: flex;
+    gap: 28px;
+    align-items: center;
+}
+
+.ownership-page .nav-links a {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.2s;
+}
+
+.ownership-page .nav-links a:hover {
+    color: var(--em);
+}
+
+.ownership-page .nav-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--em);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+}
+
+/* pulse dot */
+.ownership-page .pulse {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--em);
+    box-shadow: 0 0 8px var(--em);
+    flex-shrink: 0;
+    animation: o-blink 2s ease-in-out infinite;
+}
+
+@keyframes o-blink {
+    0%, 100% { opacity: 1 }
+    50% { opacity: 0.25 }
+}
+
+/* ════════════════════════════════════════════
+   HERO
+════════════════════════════════════════════ */
+.ownership-page .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: var(--nav-h) 40px 48px;
+    position: relative;
+    z-index: 2;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+}
+
+.ownership-page .hero::after {
+    content: '©';
+    position: absolute;
+    right: -0.05em;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: var(--bebas);
+    font-size: clamp(300px, 45vw, 600px);
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.018);
+    pointer-events: none;
+    user-select: none;
+}
+
+.ownership-page .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    opacity: 0;
+    animation: o-fadeIn 0.7s 0.5s ease forwards;
+}
+
+.ownership-page .hero-eyebrow::before {
+    content: '';
+    width: 28px;
+    height: 1px;
+    background: var(--muted);
+    flex-shrink: 0;
+}
+
+.ownership-page .hero-title {
+    font-family: var(--bebas);
+    font-size: clamp(88px, 15.5vw, 210px);
+    line-height: 0.86;
+    letter-spacing: 0.02em;
+    color: var(--white);
+    margin-bottom: 0;
+    width: 100%;
+}
+
+.ownership-page .hero-title-wrap {
+    display: block;
+    overflow: hidden;
+    line-height: 1;
+    padding-bottom: 0.04em;
+}
+
+.ownership-page .hero-title-line {
+    display: block;
+    opacity: 0;
+    transform: translateY(105%);
+    animation: o-lineUp 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.ownership-page .hero-title-wrap:nth-child(1) .hero-title-line {
+    animation-delay: 0.55s;
+}
+
+.ownership-page .hero-title-wrap:nth-child(2) .hero-title-line {
+    animation-delay: 0.72s;
+    color: var(--em);
+}
+
+.ownership-page .hero-title-wrap:nth-child(3) .hero-title-line {
+    animation-delay: 0.89s;
+}
+
+/* bottom info row */
+.ownership-page .hero-bottom {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 40px;
+    align-items: end;
+    margin-top: 52px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+    opacity: 0;
+    animation: o-fadeIn 0.8s 1.2s ease forwards;
+}
+
+.ownership-page .hero-desc {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.8;
+    letter-spacing: 0.04em;
+    max-width: 520px;
+}
+
+.ownership-page .hero-desc strong {
+    color: var(--white);
+    font-weight: 500;
+}
+
+.ownership-page .hero-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+/* ════════════════════════════════════════════
+   BUTTONS
+════════════════════════════════════════════ */
+.ownership-page .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 13px 24px;
+    border-radius: 0;
+    transition: all 0.25s;
+    white-space: nowrap;
+}
+
+.ownership-page .btn-fill {
+    background: var(--em);
+    color: #000;
+    border: 1px solid var(--em);
+}
+
+.ownership-page .btn-fill:hover {
+    background: transparent;
+    color: var(--em);
+}
+
+.ownership-page .btn-outline {
+    background: transparent;
+    color: var(--white);
+    border: 1px solid var(--border);
+}
+
+.ownership-page .btn-outline:hover {
+    border-color: var(--em);
+    color: var(--em);
+}
+
+/* ════════════════════════════════════════════
+   MARQUEE
+════════════════════════════════════════════ */
+.ownership-page .marquee-wrap {
+    border-bottom: 1px solid var(--border);
+    padding: 16px 0;
+    overflow: hidden;
+    background: var(--off);
+    position: relative;
+    z-index: 2;
+}
+
+.ownership-page .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: o-marquee 28s linear infinite;
+}
+
+.ownership-page .marquee-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 0 32px;
+    font-family: var(--bebas);
+    font-size: 18px;
+    letter-spacing: 0.12em;
+    color: var(--dim);
+    white-space: nowrap;
+}
+
+.ownership-page .marquee-item.lit {
+    color: var(--muted);
+}
+
+.ownership-page .marquee-sep {
+    color: var(--em);
+}
+
+/* ════════════════════════════════════════════
+   IDENTITY SECTION
+════════════════════════════════════════════ */
+.ownership-page .identity-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    z-index: 2;
+}
+
+.ownership-page .identity-photo-col {
+    border-right: 1px solid var(--border);
+    padding: 64px 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.ownership-page .identity-info-col {
+    padding: 64px 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 40px;
+}
+
+/* Photo frame */
+.ownership-page .photo-frame {
+    position: relative;
+    width: 100%;
+    max-width: 320px;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    background: var(--panel);
+    border: 1px solid var(--border-em);
+}
+
+.ownership-page .photo-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    display: block;
+    filter: grayscale(15%) contrast(1.05);
+    transition: filter 0.5s;
+}
+
+.ownership-page .photo-frame:hover img {
+    filter: grayscale(0%) contrast(1);
+}
+
+.ownership-page .photo-frame-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(0, 255, 120, 0.04), transparent);
+    color: var(--dim);
+}
+
+/* corner accent marks */
+.ownership-page .photo-frame::before,
+.ownership-page .photo-frame::after {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border-color: var(--em);
+    border-style: solid;
+    z-index: 2;
+}
+
+.ownership-page .photo-frame::before {
+    top: 0;
+    left: 0;
+    border-width: 2px 0 0 2px;
+}
+
+.ownership-page .photo-frame::after {
+    bottom: 0;
+    right: 0;
+    border-width: 0 2px 2px 0;
+}
+
+.ownership-page .photo-caption {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ownership-page .photo-caption::before {
+    content: '';
+    width: 16px;
+    height: 1px;
+    background: var(--dim);
+}
+
+/* Section eyebrow label */
+.ownership-page .section-eyebrow {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--em);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ownership-page .section-eyebrow::before {
+    content: '';
+    width: 20px;
+    height: 1px;
+    background: var(--em);
+}
+
+.ownership-page .big-name {
+    font-family: var(--bebas);
+    font-size: clamp(48px, 6vw, 84px);
+    line-height: 0.9;
+    letter-spacing: 0.04em;
+    margin-bottom: 10px;
+    color: var(--white);
+}
+
+.ownership-page .big-name .accent {
+    color: var(--em);
+}
+
+.ownership-page .title-role {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 40px;
+}
+
+/* Info grid cells */
+.ownership-page .id-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    margin-bottom: 36px;
+}
+
+.ownership-page .id-cell {
+    background: var(--black);
+    padding: 18px 22px;
+}
+
+.ownership-page .id-cell-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--dim);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.ownership-page .id-cell-value {
+    font-family: var(--syne);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--white);
+}
+
+.ownership-page .id-cell-value.em {
+    color: var(--em);
+}
+
+/* Tech tags */
+.ownership-page .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.ownership-page .tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 5px 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    transition: all 0.2s;
+}
+
+.ownership-page .tag:hover {
+    border-color: var(--em);
+    color: var(--em);
+}
+
+.ownership-page .tag.lit {
+    border-color: var(--border-em);
+    color: var(--em);
+}
+
+/* ════════════════════════════════════════════
+   STATS BAND
+════════════════════════════════════════════ */
+.ownership-page .stats-band {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    z-index: 2;
+}
+
+.ownership-page .stat-block {
+    padding: 48px 40px;
+    border-right: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s;
+}
+
+.ownership-page .stat-block:last-child {
+    border-right: none;
+}
+
+.ownership-page .stat-block:hover {
+    background: var(--off);
+}
+
+.ownership-page .stat-block::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--em);
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ownership-page .stat-block:hover::after {
+    transform: scaleY(1);
+}
+
+.ownership-page .stat-icon {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    color: var(--em);
+    opacity: 0.12;
+    transition: opacity 0.3s;
+}
+
+.ownership-page .stat-block:hover .stat-icon {
+    opacity: 0.36;
+}
+
+.ownership-page .stat-num {
+    font-family: var(--bebas);
+    font-size: clamp(52px, 5.5vw, 76px);
+    line-height: 1;
+    color: var(--white);
+    margin-bottom: 6px;
+}
+
+.ownership-page .stat-unit {
+    color: var(--em);
+    font-size: 0.6em;
+}
+
+.ownership-page .stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+/* ════════════════════════════════════════════
+   DECLARATION
+════════════════════════════════════════════ */
+.ownership-page .declaration-section {
+    border-bottom: 1px solid var(--border);
+    padding: 80px 40px;
+    position: relative;
+    overflow: hidden;
+    z-index: 2;
+}
+
+.ownership-page .declaration-section::before {
+    content: 'COPYRIGHT';
+    position: absolute;
+    right: -0.02em;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: var(--bebas);
+    font-size: clamp(100px, 16vw, 220px);
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.02);
+    pointer-events: none;
+    user-select: none;
+    letter-spacing: 0.06em;
+}
+
+.ownership-page .decl-inner {
+    position: relative;
+    z-index: 2;
+    max-width: 920px;
+}
+
+.ownership-page .decl-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--em);
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.ownership-page .decl-tag::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+.ownership-page .decl-quote {
+    font-family: var(--serif);
+    font-size: clamp(22px, 3.2vw, 46px);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: var(--white);
+    margin-bottom: 48px;
+    font-style: italic;
+}
+
+.ownership-page .decl-quote strong {
+    font-style: normal;
+    background: linear-gradient(90deg, var(--em), #00c8ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.ownership-page .decl-meta {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.ownership-page .decl-name {
+    font-family: var(--bebas);
+    font-size: 28px;
+    letter-spacing: 0.08em;
+    color: var(--white);
+    margin-bottom: 3px;
+}
+
+.ownership-page .decl-role {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+}
+
+.ownership-page .verified-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--border-em);
+    padding: 10px 18px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--em);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+}
+
+/* ════════════════════════════════════════════
+   LEGAL GRID
+════════════════════════════════════════════ */
+.ownership-page .legal-section {
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    z-index: 2;
+}
+
+.ownership-page .section-header {
+    padding: 48px 40px 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.ownership-page .section-title {
+    font-family: var(--bebas);
+    font-size: clamp(40px, 5vw, 64px);
+    line-height: 1;
+    letter-spacing: 0.04em;
+}
+
+.ownership-page .section-title .em {
+    color: var(--em);
+}
+
+.ownership-page .section-count {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.ownership-page .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-bottom: 1px solid var(--border);
+}
+
+.ownership-page .protocol-card {
+    padding: 40px 32px;
+    border-right: 1px solid var(--border);
+    transition: background 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.ownership-page .protocol-card:last-child {
+    border-right: none;
+}
+
+.ownership-page .protocol-card:hover {
+    background: var(--off);
+}
+
+.ownership-page .protocol-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--em);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s;
+}
+
+.ownership-page .protocol-card:hover::after {
+    transform: scaleX(1);
+}
+
+.ownership-page .protocol-num {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--dim);
+    letter-spacing: 0.2em;
+    margin-bottom: 24px;
+    display: block;
+}
+
+.ownership-page .protocol-icon {
+    margin-bottom: 20px;
+    color: var(--em);
+    opacity: 0.6;
+    transition: opacity 0.3s;
+}
+
+.ownership-page .protocol-card:hover .protocol-icon {
+    opacity: 1;
+}
+
+.ownership-page .protocol-title {
+    font-family: var(--syne);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 12px;
+    letter-spacing: 0.02em;
+}
+
+.ownership-page .protocol-body {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+}
+
+.ownership-page .wide-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.ownership-page .wide-card {
+    padding: 48px;
+    border-right: 1px solid var(--border);
+    transition: background 0.3s;
+}
+
+.ownership-page .wide-card:last-child {
+    border-right: none;
+}
+
+.ownership-page .wide-card:hover {
+    background: var(--off);
+}
+
+.ownership-page .wide-card-layout {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 40px;
+    align-items: start;
+}
+
+.ownership-page .wide-card-left .protocol-title {
+    font-size: 20px;
+    margin-bottom: 4px;
+}
+
+/* ════════════════════════════════════════════
+   TECH STACK
+════════════════════════════════════════════ */
+.ownership-page .tech-section {
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    z-index: 2;
+}
+
+.ownership-page .stack-row {
+    display: grid;
+    grid-template-columns: 60px 48px 1fr 200px 120px;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.25s;
+}
+
+.ownership-page .stack-row:last-child {
+    border-bottom: none;
+}
+
+.ownership-page .stack-row:hover {
+    background: var(--off);
+}
+
+.ownership-page .stack-row:hover .stack-name {
+    color: var(--em);
+}
+
+.ownership-page .stack-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 22px 0;
+    border-right: 1px solid var(--border);
+}
+
+.ownership-page .stack-icon {
+    padding: 0 14px;
+    color: var(--em);
+    opacity: 0.5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: stretch;
+    border-right: 1px solid var(--border);
+    transition: opacity 0.3s;
+}
+
+.ownership-page .stack-row:hover .stack-icon {
+    opacity: 1;
+}
+
+.ownership-page .stack-name {
+    font-family: var(--syne);
+    font-size: 15px;
+    font-weight: 700;
+    padding: 22px 32px;
+    transition: color 0.25s;
+}
+
+.ownership-page .stack-cat {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 22px 24px;
+    border-left: 1px solid var(--border);
+}
+
+.ownership-page .stack-tag-cell {
+    padding: 22px 20px;
+    border-left: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+}
+
+.ownership-page .stack-tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 4px 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.ownership-page .tag-core {
+    background: rgba(0, 255, 120, 0.1);
+    color: var(--em);
+    border: 1px solid var(--border-em);
+}
+
+.ownership-page .tag-design {
+    background: rgba(0, 200, 255, 0.08);
+    color: #00c8ff;
+    border: 1px solid rgba(0, 200, 255, 0.2);
+}
+
+.ownership-page .tag-backend {
+    background: rgba(180, 100, 255, 0.08);
+    color: #b46aff;
+    border: 1px solid rgba(180, 100, 255, 0.2);
+}
+
+/* ════════════════════════════════════════════
+   FINE PRINT
+════════════════════════════════════════════ */
+.ownership-page .fine-section {
+    padding: 48px 40px;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 40px;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+}
+
+.ownership-page .fine-text {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--dim);
+    line-height: 2.2;
+    letter-spacing: 0.05em;
+}
+
+.ownership-page .fine-text .hl {
+    color: var(--em);
+    opacity: 0.7;
+}
+
+.ownership-page .fine-stamp {
+    width: 96px;
+    height: 96px;
+    border: 1px solid var(--border-em);
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+}
+
+.ownership-page .fine-stamp::before {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border: 1px dashed rgba(0, 255, 120, 0.14);
+    border-radius: 50%;
+    animation: o-spin 25s linear infinite;
+}
+
+.ownership-page .fine-stamp-text {
+    font-family: var(--mono);
+    font-size: 8px;
+    color: var(--em);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    line-height: 1.6;
+    position: relative;
+}
+
+/* ════════════════════════════════════════════
+   SIGNATURE SECTION
+════════════════════════════════════════════ */
+.ownership-page .sig-section {
+    padding: 80px 40px 64px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    z-index: 2;
+    border-bottom: 1px solid var(--border);
+}
+
+/* large bg watermark */
+.ownership-page .sig-section::after {
+    content: 'THE.NAVLEKAR';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--bebas);
+    font-size: clamp(80px, 15vw, 200px);
+    color: rgba(255, 255, 255, 0.022);
+    pointer-events: none;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.ownership-page .sig-giant {
+    font-family: var(--bebas);
+    font-size: clamp(64px, 12vw, 160px);
+    line-height: 0.86;
+    letter-spacing: 0.04em;
+    color: var(--white);
+    margin-bottom: 10px;
+    position: relative;
+    z-index: 2;
+}
+
+.ownership-page .sig-giant .em {
+    color: var(--em);
+}
+
+.ownership-page .sig-role {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    margin-bottom: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+
+.ownership-page .sig-role::before,
+.ownership-page .sig-role::after {
+    content: '';
+    width: 36px;
+    height: 1px;
+    background: var(--border);
+}
+
+.ownership-page .sig-cta {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 2;
+}
+
+/* ════════════════════════════════════════════
+   FOOTER
+════════════════════════════════════════════ */
+.ownership-page .site-footer {
+    padding: 20px 40px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(8, 8, 8, 0.35);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    position: relative;
+    z-index: 2;
+}
+
+.ownership-page .footer-l,
+.ownership-page .footer-r {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 0.12em;
+}
+
+.ownership-page .footer-r a {
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.ownership-page .footer-r a:hover {
+    color: var(--em);
+}
+
+/* ════════════════════════════════════════════
+   SCROLL REVEAL
+════════════════════════════════════════════ */
+.ownership-page .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ownership-page .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.ownership-page .reveal-left {
+    opacity: 0;
+    transform: translateX(-28px);
+    transition: opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ownership-page .reveal-left.visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* ════════════════════════════════════════════
+   KEYFRAMES (prefixed with o- to avoid conflicts)
+════════════════════════════════════════════ */
+@keyframes o-fadeIn {
+    from { opacity: 0 }
+    to { opacity: 1 }
+}
+
+@keyframes o-lineUp {
+    from { opacity: 0; transform: translateY(105%) }
+    to { opacity: 1; transform: translateY(0) }
+}
+
+@keyframes o-marquee {
+    from { transform: translateX(0) }
+    to { transform: translateX(-50%) }
+}
+
+@keyframes o-spin {
+    to { transform: rotate(360deg) }
+}
+
+/* ════════════════════════════════════════════
+   ACCESSIBILITY
+════════════════════════════════════════════ */
+.ownership-page *:focus-visible {
+    outline: 2px solid var(--em);
+    outline-offset: 3px;
+}
+
+@media(prefers-reduced-motion:reduce) {
+    .ownership-page *,
+    .ownership-page *::before,
+    .ownership-page *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ════════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════════ */
+@media(max-width:1280px) {
+    .ownership-page .cards-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .ownership-page .stats-band {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .ownership-page .stat-block:nth-child(2) {
+        border-right: none;
+    }
+
+    .ownership-page .stat-block:nth-child(3),
+    .ownership-page .stat-block:nth-child(4) {
+        border-top: 1px solid var(--border);
+    }
+}
+
+@media(max-width:1024px) {
+    .ownership-page .identity-section {
+        grid-template-columns: 1fr;
+    }
+
+    .ownership-page .identity-photo-col {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding: 48px 32px;
+    }
+
+    .ownership-page .photo-frame {
+        max-width: 100%;
+        aspect-ratio: 16/9;
+    }
+
+    .ownership-page .photo-frame img {
+        object-position: center 20%;
+    }
+
+    .ownership-page .wide-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .ownership-page .wide-card {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .ownership-page .wide-card-layout {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .ownership-page .stack-row {
+        grid-template-columns: 48px 40px 1fr 150px 100px;
+    }
+
+    .ownership-page .hero-title {
+        font-size: clamp(80px, 13vw, 180px);
+    }
+}
+
+@media(max-width:768px) {
+    .ownership-page {
+        --nav-h: 56px;
+    }
+
+    .ownership-page .o-nav {
+        padding: 0 20px;
+    }
+
+    .ownership-page .nav-links {
+        display: none;
+    }
+
+    .ownership-page .hero {
+        padding: var(--nav-h) 20px 40px;
+    }
+
+    .ownership-page .hero-title {
+        font-size: clamp(64px, 18vw, 120px);
+    }
+
+    .ownership-page .hero-bottom {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .ownership-page .identity-photo-col,
+    .ownership-page .identity-info-col {
+        padding: 40px 20px;
+    }
+
+    .ownership-page .declaration-section {
+        padding: 60px 20px;
+    }
+
+    .ownership-page .section-header,
+    .ownership-page .tech-header {
+        padding: 32px 20px 20px;
+    }
+
+    .ownership-page .protocol-card {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .ownership-page .cards-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ownership-page .stats-band {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .ownership-page .stat-block {
+        padding: 32px 24px;
+    }
+
+    .ownership-page .stack-row {
+        grid-template-columns: 40px 40px 1fr;
+    }
+
+    .ownership-page .stack-cat,
+    .ownership-page .stack-tag-cell {
+        display: none;
+    }
+
+    .ownership-page .fine-section {
+        grid-template-columns: 1fr;
+        padding: 40px 20px;
+    }
+
+    .ownership-page .fine-stamp {
+        display: none;
+    }
+
+    .ownership-page .sig-section {
+        padding: 60px 20px 48px;
+    }
+
+    .ownership-page .site-footer {
+        padding: 16px 20px;
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+}
