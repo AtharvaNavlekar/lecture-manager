@@ -1,280 +1,193 @@
-# 🎓 Lecture Manager - Enterprise College Management System
+<p align="center">
+  <img src="https://img.shields.io/badge/LecMan-v2.0-6C63FF?style=for-the-badge&labelColor=0D1117" alt="Version" />
+  <img src="https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=white&labelColor=0D1117" alt="React" />
+  <img src="https://img.shields.io/badge/Express-4.18-000000?style=for-the-badge&logo=express&logoColor=white&labelColor=0D1117" alt="Express" />
+  <img src="https://img.shields.io/badge/SQLite-3-003B57?style=for-the-badge&logo=sqlite&logoColor=white&labelColor=0D1117" alt="SQLite" />
+  <img src="https://img.shields.io/badge/Vite-7.2-646CFF?style=for-the-badge&logo=vite&logoColor=white&labelColor=0D1117" alt="Vite" />
+  <img src="https://img.shields.io/badge/License-Proprietary-F59E0B?style=for-the-badge&labelColor=0D1117" alt="License" />
+</p>
 
-## 🚀 Quick Start
+<h1 align="center">🎓 LecMan — Enterprise College Management System</h1>
 
-### 1. Start the Application
+<p align="center">
+  <strong>A comprehensive academic operations platform that automates leave workflows, substitute assignments, attendance tracking, and predictive analytics — all from one unified dashboard.</strong>
+</p>
 
-```bash
-# Windows
-START_DEMO.bat
-
-# Wait 15 seconds, then visit:
-http://localhost:5173
-```
-
-### 2. Login Credentials
-
-**SECURITY NOTICE**: Default credentials must be overridden immediately upon first login. The system requires administrators to change default passwords on startup in production.
-
----
-
-## 📖 Complete Setup Guide (For All Users
-
-This guide is written step-by-step for anyone—including non-technical users—who wants to set up Lecture Manager for their college from scratch.
-
-### Phase 1: Download & Install
-
-1. **Download the Code**:
-   - Go to the GitHub repository page.
-   - Click the green **`<> Code`** button.
-   - Click **`Download ZIP`**.
-   - Extract the downloaded ZIP file to your computer (e.g., `Documents/lecture-manager`).
-2. **Install Node.js**:
-   - Go to [nodejs.org](https://nodejs.org/).
-   - Download and install the "LTS" (Long Term Support) version or any version labeled 16+.
-3. **Install Dependencies**:
-   - Open your terminal (Command Prompt or PowerShell on Windows, Terminal on Mac).
-   - Navigate to your extracted folder: `cd Documents/lecture-manager`
-   - Run the setup command to install everything needed:
-     ```bash
-     npm run setup
-     ```
-   - *Wait for the installation to finish.*
-
-### Phase 2: Prepare Your College's Data
-
-The system comes with synthetic dummy data in the `data/` folder, but **for your own college**, you must create your own Excel files.
-
-1. **Delete the old dummy data** (Optional but recommended):
-   - You can wipe the `data/` folder clean or just replace the files inside it.
-2. **Create Your Custom Excel Files**:
-   - You will need to create specific `.xlsx` (Excel) files. The column headers **must match the system exactly**.
-   - **Departments**: `Departments.xlsx` (Columns: code, name, short_name, is_active)
-   - **Divisions**: `Divisions.xlsx` (Columns: code, name, sort_order, is_active)
-   - **Time Slots**: `Time_Slots.xlsx` (Columns: name, start_time, end_time, slot_type, sort_order)
-   - **Faculty**: Create files like `IT_Faculty.xlsx` (Columns: name, email, department, post, is_hod, password)
-   - **Students**: Create files like `IT_Students.xlsx` (Columns: name, roll_no, email, class_year, department, division)
-   - **Subjects**: Create files like `IT_Subjects.xlsx` (Columns: name, code, department, class_year)
-   - **Syllabus**: Create files like `IT_Syllabus.xlsx` (Columns: subject_code, unit_number, topic_title, estimated_hours)
-   - **Admin**: `Admin_Users.xlsx` (Columns: name, email, department, post, is_hod, password)
-3. **Organize the Folders**:
-   - Ensure your files are structured correctly inside a main `data/` folder (e.g., `data/faculty/`, `data/students/`, `data/subjects/`).
-
-### Phase 3: Start the Application
-
-1. In your terminal, inside the `lecture-manager` folder, run:
-   ```bash
-   npm run dev
-   ```
-2. Wait a few moments. A browser page should automatically open at `http://localhost:5173`. If it doesn't, copy and paste that link into your browser.
-
-### Phase 4: Upload Your Data
-
-Now that the app is running and your Excel files are ready, you need to import your college's data into the system.
-
-1. **Log in as Admin**: Use the credentials from your `Admin_Users.xlsx` file (or default credentials if starting fresh).
-2. **Navigate to System Settings**: Locate the gear icon or "Settings" menu.
-3. **Go to the "Data Import" Section**:
-   - *Note: If uploading large batches, you may need to use root configuration scripts, but UI uploads are the standard.*
-   - In the system menus, locate the respective bulk upload panels (e.g., in the Faculty Directory for faculty, Student Directory for students).
-4. **Upload Sequence**:
-   - Always upload in this exact order to avoid reference errors:
-     1. **Configuration**: Upload Departments, Divisions, Time Slots first.
-     2. **Users**: Upload Admin, then Faculty, then Students.
-     3. **Academics**: Upload Subjects, then Syllabus.
-     4. **Timetables (Optional/Upcoming)**: Upload prepared schedules.
-5. **Verify**: Check the dashboard pages to ensure the numbers match the data you uploaded.
-
-### Phase 5: How the Website Works
-
-Once set up, the workflow is entirely automated:
-
-- **Faculty** log in to view their timetables, request leaves, accept sub requests, and upload assignments.
-- **HODs** (Head of Departments) log in to approve/deny leaves (if they don't respond in 30 minutes, it auto-approves) and monitor department performance.
-- **Students** log in to check timetables, submit assignment files, and review their personal attendance.
-- **Substitute System**: When a faculty takes leave, the system instantly calculates the best substitute from available free faculty and prompts them. If no one accepts in 15 minutes, the system forces an auto-assignment to ensure no class is left unattended.
+<p align="center">
+  <a href="#-quick-start">Quick Start</a> · <a href="#-features">Features</a> · <a href="#-architecture">Architecture</a> · <a href="#-api-reference">API Reference</a> · <a href="#-database">Database</a> · <a href="#-deployment">Deployment</a>
+</p>
 
 ---
 
 ## 📋 Table of Contents
 
-- [Overview](#overview)
-- [Features](#features)
-- [Technology Stack](#technology-stack)
-- [Project Structure](#project-structure)
-- [User Roles &amp; Permissions](#user-roles--permissions)
-- [API Endpoints](#api-endpoints)
-- [Database](#database)
-- [Development](#development)
-- [Security](#security)
-- [Deployment](#deployment)
-- [Troubleshooting](#troubleshooting)
+- [Quick Start](#-quick-start)
+- [Complete Setup Guide](#-complete-setup-guide-for-all-users)
+- [Features](#-features)
+- [Architecture](#-architecture)
+- [Technology Stack](#️-technology-stack)
+- [Project Structure](#-project-structure)
+- [Frontend — Pages & Components](#-frontend--pages--components)
+- [Backend — API Reference](#-backend--api-reference)
+- [Backend — Controllers & Services](#-backend--controllers--services)
+- [Database](#-database)
+- [Authentication & Security](#-authentication--security)
+- [Automation Engine](#-automation-engine)
+- [User Roles & Permissions](#-user-roles--permissions)
+- [Development](#-development)
+- [Testing](#-testing)
+- [Deployment](#-deployment)
+- [Troubleshooting](#-troubleshooting)
+- [Performance](#-performance)
+- [Contributing](#-contributing)
+- [License & Support](#-license--support)
 
 ---
 
-## Overview
+## 🚀 Quick Start
 
-Lecture Manager is a comprehensive enterprise-grade college management system designed to streamline academic operations, automate administrative tasks, and provide powerful analytics for educational institutions. The system handles everything from leave management and substitute assignments to AI-powered analytics and resource management.
+```bash
+# 1. Clone & install
+git clone https://github.com/AtharvaNavlekar/lecture-manager.git
+cd lecture-manager
+npm run setup          # installs root + client + server dependencies
 
-### Key Highlights
+# 2. Launch (development)
+npm run dev            # Starts both frontend (5173) and backend (3000) concurrently
 
-- **Automated Leave & Substitute Management** with 30-min auto-approval and 15-min auto-assignment
-- **AI-Powered Analytics** for predictive insights and recommendations
-- **Comprehensive Resource Management** with file uploads and organization
-- **Real-time Notifications** and announcements
-- **Advanced Analytics Dashboard** with interactive charts
-- **Mobile-Responsive Design** for all devices
-- **Enterprise-Grade Security** with JWT authentication and Helmet protection
-- **Audit Logging** for compliance and tracking
+# 3. Open
+http://localhost:5173
+```
+
+> **Windows users** — double-click `START_DEMO.bat` to launch everything with one click.
+
+---
+
+## 📖 Complete Setup Guide (For All Users)
+
+This guide is written step-by-step for anyone — including non-technical users — who wants to set up LecMan for their college from scratch.
+
+### Phase 1 — Download & Install
+
+1. **Download the Code**
+   - Go to the GitHub repository → click the green **`<> Code`** button → **Download ZIP**.
+   - Extract the ZIP to your computer (e.g. `Documents/lecture-manager`).
+2. **Install Node.js**
+   - Download and install the LTS version from [nodejs.org](https://nodejs.org/) (v16+ required).
+3. **Install Dependencies**
+   ```bash
+   cd lecture-manager
+   npm run setup
+   ```
+
+### Phase 2 — Prepare Your College's Data
+
+The system ships with synthetic demo data, but **for your own institution**, create your own Excel files:
+
+| File | Required Columns |
+|------|-----------------|
+| `Departments.xlsx` | `code`, `name`, `short_name`, `is_active` |
+| `Divisions.xlsx` | `code`, `name`, `sort_order`, `is_active` |
+| `Time_Slots.xlsx` | `name`, `start_time`, `end_time`, `slot_type`, `sort_order` |
+| `<Dept>_Faculty.xlsx` | `name`, `email`, `department`, `post`, `is_hod`, `password` |
+| `<Dept>_Students.xlsx` | `name`, `roll_no`, `email`, `class_year`, `department`, `division` |
+| `<Dept>_Subjects.xlsx` | `name`, `code`, `department`, `class_year` |
+| `<Dept>_Syllabus.xlsx` | `subject_code`, `unit_number`, `topic_title`, `estimated_hours` |
+| `Admin_Users.xlsx` | `name`, `email`, `department`, `post`, `is_hod`, `password` |
+
+### Phase 3 — Start & Upload
+
+```bash
+npm run dev
+```
+
+1. Log in as **Admin** → navigate to **Settings** → **Data Import**.
+2. Upload in this exact order to avoid reference errors:
+   1. **Configuration** → Departments, Divisions, Time Slots
+   2. **Users** → Admin, then Faculty, then Students
+   3. **Academics** → Subjects, then Syllabus
+
+### Phase 4 — How It Works
+
+| Role | Workflow |
+|------|---------|
+| **Faculty** | View timetables → request leaves → accept substitute requests → upload assignments |
+| **HOD** | Approve/deny leaves (auto-approves after 30 min if no action) → monitor department performance |
+| **Students** | View timetables → submit assignments → check attendance records |
+| **Substitute Engine** | Leave triggers auto-match → best substitute is prompted → auto-assigned in 15 min if no response |
 
 ---
 
 ## ✨ Features
 
-### Core Management Features
+### Core Management
 
-- **Leave Management**
+| Feature | Description |
+|---------|-------------|
+| **Leave Management** | Faculty leave requests → HOD approval workflow → 30-min auto-approval → full history & analytics |
+| **Substitute Assignment** | Smart teacher matching by department, availability & fairness → 15-min auto-assignment → live countdown timers → weekly CSV/Excel reports |
+| **Lecture & Timetable** | Master schedule management → personal timetables → conflict detection → automated day tracking |
+| **Faculty & Student Directory** | Comprehensive profiles → department-wise organization → bulk import/export → role-based access |
 
-  - Teacher leave request submission with approval workflow
-  - HOD approval/denial dashboard with timeline
-  - Automated 30-minute auto-approval if HOD doesn't respond
-  - Leave history and analytics
-- **Substitute Assignment System**
+### Academic
 
-  - Smart teacher matching based on department, availability, and fairness
-  - 15-minute auto-assignment if no teacher accepts
-  - Live countdown timers in UI
-  - Weekly reports with CSV/Excel export
-  - Substitute analytics and workload balancing
-- **Lecture & Timetable Management**
+| Feature | Description |
+|---------|-------------|
+| **Assignment Management** | Create assignments with file uploads → submission tracking → due date notifications → analytics |
+| **Resource Library** | Centralized document repository → category-based organization → search & filter → access control by role |
+| **Faculty Evaluations** | Criteria-based performance assessments → historical tracking → analytics & reporting |
+| **Attendance** | Class-wise tracking → automated calculations → trends & analytics → student reports |
 
-  - Master schedule management
-  - Personal timetables for faculty and students
-  - Real-time schedule updates
-  - Conflict detection and resolution
-  - Automated day tracking
-- **Faculty & Student Directory**
+### Communication
 
-  - Comprehensive faculty profiles with specializations
-  - Student enrollment and management
-  - Department-wise organization
-  - Role-based access control
-  - Bulk import/export functionality
+| Feature | Description |
+|---------|-------------|
+| **Announcements** | Campus-wide or role-targeted announcements → priority levels → expiration dates |
+| **Notifications** | Real-time in-app notifications → email digests (configurable) → read/unread tracking |
+| **Inbox** | Internal messaging → threaded conversations → message archival |
 
-### Academic Features
+### Analytics & AI
 
-- **Assignment Management**
+| Feature | Description |
+|---------|-------------|
+| **Advanced Analytics** | Department metrics → teacher performance → student reports → interactive Recharts & Chart.js charts |
+| **Predictive Analytics** | AI-powered workload predictions → leave pattern analysis → resource utilization forecasting |
+| **Custom Reports** | Weekly/monthly substitute reports → attendance & performance reports → export to CSV, Excel, PDF |
 
-  - Create and manage assignments with file uploads
-  - Assignment submission tracking
-  - Due date management and notifications
-  - File attachments (PDF, Word, images)
-  - Assignment analytics
-- **Resource Library**
+### Administrative
 
-  - Centralized document repository
-  - Category-based organization
-  - File upload and download
-  - Search and filter capabilities
-  - Access control by role
-- **Faculty Evaluations**
+| Feature | Description |
+|---------|-------------|
+| **System Settings** | 13 configurable keys — org info, attendance thresholds, grading scale, notification frequency, registration toggle, maintenance mode, and more |
+| **User Management** | RBAC (Admin/HOD/Teacher/Student) → bulk operations → password reset → credential management |
+| **Audit Logs** | Comprehensive activity tracking → user action logging → compliance reporting → export |
+| **Data Management** | Bulk import/export (CSV, Excel) → database backup & restore → schema migrations (Knex.js) |
 
-  - Performance evaluation system
-  - Criteria-based assessments
-  - Historical evaluation tracking
-  - Analytics and reporting
-- **Attendance Management**
+---
 
-  - Class-wise attendance tracking
-  - Attendance trends and analytics
-  - Student attendance reports
-  - Automated attendance calculations
+## 🏗 Architecture
 
-### Communication Features
-
-- **Announcements System**
-
-  - Campus-wide announcements
-  - Role-based targeting (students, faculty, all)
-  - Priority levels and expiration dates
-  - Announcement history
-- **Notifications**
-
-  - Real-time in-app notifications
-  - Email notifications (configurable)
-  - Notification preferences
-  - Read/unread tracking
-- **Inbox**
-
-  - Internal messaging system
-  - Threaded conversations
-  - Message archival
-
-### Analytics & Reporting
-
-- **Advanced Analytics Dashboard**
-
-  - Department-level metrics
-  - Teacher performance analytics
-  - Student performance reports
-  - Attendance trends
-  - Leave and substitute statistics
-  - Interactive charts (Recharts, Chart.js)
-- **Predictive Analytics**
-
-  - AI-powered workload predictions
-  - Leave pattern analysis
-  - Resource utilization forecasting
-  - Performance trend predictions
-- **Custom Reports**
-
-  - Weekly/monthly substitute reports
-  - Attendance reports
-  - Performance reports
-  - Export to CSV, Excel, PDF
-
-### Administrative Features
-
-- **System Configuration**
-
-  - Configurable automation timers
-  - Email settings
-  - System preferences
-  - Feature toggles
-- **User Management**
-
-  - Role-based access control (Admin, HOD, Teacher, Student)
-  - User credentials management
-  - Bulk user operations
-  - Password reset functionality
-- **Audit Logs**
-
-  - Comprehensive activity tracking
-  - User action logging
-  - Security audit trail
-  - Compliance reporting
-- **Data Management**
-
-  - Bulk import/export (CSV, Excel)
-  - Database backup and restore
-  - Data validation
-  - Schema migrations (Knex.js)
-
-### AI & Automation
-
-- **AI Features**
-
-  - Smart substitute recommendations
-  - Workload balancing algorithms
-  - Predictive analytics
-  - Pattern recognition
-- **Automation Service**
-
-  - Auto-approval timers (30 minutes)
-  - Auto-assignment timers (15 minutes)
-  - Scheduled notifications
-  - Automated reports
-  - Cron-based tasks
+```
+┌───────────────────────────────────────────────────────────────────────┐
+│                          CLIENT (React 19 + Vite 7)                  │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐            │
+│  │ 45 Pages │  │22 Comps  │  │AuthContext│  │  Axios   │            │
+│  └─────┬────┘  └────┬─────┘  └─────┬────┘  └─────┬────┘            │
+│        └─────────────┴──────────────┴─────────────┘                  │
+│                              ▼                                       │
+│                    Vite Dev Server (:5173)                           │
+└────────────────────────────┬─────────────────────────────────────────┘
+                             │  /api/v1/*  (proxy)
+┌────────────────────────────▼─────────────────────────────────────────┐
+│                       SERVER (Express 4.18)                          │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐            │
+│  │27 Routes │  │27 Ctrls  │  │13 Services│  │6 Midware │            │
+│  └─────┬────┘  └─────┬────┘  └─────┬────┘  └──────────┘            │
+│        └─────────────┴──────────────┘                                │
+│                              ▼                                       │
+│                  SQLite 3 (WAL mode) + Knex.js                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -282,57 +195,47 @@ Lecture Manager is a comprehensive enterprise-grade college management system de
 
 ### Frontend
 
-- **Framework**: React 19.2.0
-- **Build Tool**: Vite 7.2.4
-- **Styling**:
-  - TailwindCSS 4.1.18
-  - Custom CSS with responsive design
-- **Routing**: React Router DOM 7.11.0
-- **State Management**: Context API
-- **UI Libraries**:
-  - Framer Motion 12.29.2 (animations)
-  - Lucide React 0.562.0 (icons)
-  - Lottie React 2.4.1 (animations)
-- **Charts & Visualization**:
-  - Recharts 3.6.0
-- **HTTP Client**: Axios 1.13.2
-- **Notifications**: React Hot Toast 2.6.0
-- **Authentication**: JWT Decode 4.0.0
+| Category | Technology | Version |
+|----------|-----------|---------|
+| Framework | React | 19.2.0 |
+| Build Tool | Vite | 7.2.4 |
+| Styling | TailwindCSS | 4.1.18 |
+| Routing | React Router DOM | 7.11.0 |
+| Animations | Framer Motion | 12.29.2 |
+| Charts | Recharts · Chart.js | 3.6.0 · 4.5.1 |
+| Icons | Lucide React · Phosphor Icons | 0.562.0 · 2.1.10 |
+| HTTP | Axios | 1.13.2 |
+| Toasts | React Hot Toast | 2.6.0 |
+| Auth | JWT Decode | 4.0.0 |
 
 ### Backend
 
-- **Runtime**: Node.js
-- **Framework**: Express 4.18.2
-- **Database**: SQLite3 5.1.6
-- **ORM/Query Builder**: Knex.js 3.1.0
-- **Authentication**:
-  - JSON Web Token 9.0.2
-  - Bcrypt 5.1.1
-- **Security**: Helmet 8.1.0
-- **File Handling**:
-  - Multer 2.0.2 (file uploads)
-  - PDFKit 0.15.2 (PDF generation)
-  - ExcelJS 4.4.0 (Excel export)
-  - XLSX 0.18.5 (Excel import)
-- **Email**: Nodemailer 7.0.12
-- **Logging**: Winston 3.19.0
-- **Scheduling**: Node-Cron 4.2.1
-- **Utilities**:
-  - UUID 13.0.0
-  - dotenv 16.3.1
-  - csv-stringify 6.6.0
+| Category | Technology | Version |
+|----------|-----------|---------|
+| Runtime | Node.js | 16+ |
+| Framework | Express | 4.18.2 |
+| Database | SQLite3 | 5.1.6 |
+| ORM / Query Builder | Knex.js | 3.1.0 |
+| Auth | JSON Web Token · Bcrypt | 9.0.2 · 5.1.1 |
+| Security | Helmet · CORS | 8.1.0 · 2.8.5 |
+| File Uploads | Multer | 2.0.2 |
+| PDF | PDFKit | 0.15.2 |
+| Excel | ExcelJS · XLSX | 4.4.0 · 0.18.5 |
+| Email | Nodemailer | 7.0.12 |
+| Logging | Winston | 3.19.0 |
+| Scheduling | Node-Cron | 4.2.1 |
+| IDs | UUID | 13.0.0 |
 
-### Development Tools
+### DevOps & Tooling
 
-- **Process Manager**: PM2 6.0.14
-- **Linting**: ESLint 9.39.2
-- **Formatting**: Prettier 3.8.0
-- **Git Hooks**:
-  - Husky 9.1.7
-  - Lint-staged 16.2.7
-  - Commitlint 20.3.1
-- **Testing**: Jest (configured)
-- **Concurrency**: Concurrently 9.2.1
+| Tool | Purpose |
+|------|---------|
+| PM2 6.0 | Process management |
+| Docker | Containerized deployment |
+| ESLint 9 + Prettier 3 | Linting & formatting |
+| Husky 9 + Lint-Staged + Commitlint | Git hooks & conventional commits |
+| Concurrently | Parallel dev servers |
+| Jest | Testing framework |
 
 ---
 
@@ -340,435 +243,519 @@ Lecture Manager is a comprehensive enterprise-grade college management system de
 
 ```
 lecture-manager/
-├── client/                          # React Frontend (Vite)
+├── client/                              # ── React Frontend ──────────────
 │   ├── src/
-│   │   ├── pages/                   # 45 Page Components
-│   │   │   ├── AdminDashboard.jsx
-│   │   │   ├── Analytics.jsx
-│   │   │   ├── Announcements.jsx
-│   │   │   ├── AssignmentManager.jsx
-│   │   │   ├── Attendance.jsx
-│   │   │   ├── AuditLogs.jsx
-│   │   │   ├── FacultyDirectory.jsx
-│   │   │   ├── HodDashboard.jsx
-│   │   │   ├── LeaveRequest.jsx
-│   │   │   ├── MasterSchedule.jsx
-│   │   │   ├── PersonalTimetable.jsx
-│   │   │   ├── PredictiveAnalytics.jsx
-│   │   │   ├── ResourceLibrary.jsx
-│   │   │   ├── StudentDirectory.jsx
-│   │   │   ├── SubstituteAssignment.jsx
-│   │   │   └── ... (30 more pages)
-│   │   ├── components/              # 22 Reusable Components
-│   │   ├── context/                 # AuthContext
-│   │   ├── hooks/                   # Custom React hooks
-│   │   ├── services/                # API service layer
-│   │   ├── utils/                   # Helper functions
-│   │   ├── styles/                  # Global styles
-│   │   ├── App.jsx                  # Main app component with routing
-│   │   └── main.jsx                 # React entry point
-│   ├── public/                      # Static assets
-│   ├── package.json
-│   └── vite.config.js               # Vite configuration
-│
-├── server/                          # Express Backend
-│   ├── routes/                      # 27 API Route Modules
-│   │   ├── authRoutes.js            # Authentication
-│   │   ├── leaveRoutes.js           # Leave management (20KB)
-│   │   ├── lectureRoutes.js         # Lecture scheduling
-│   │   ├── assignmentRoutes.js      # Assignment management
-│   │   ├── announcementRoutes.js    # Announcements
-│   │   ├── analyticsRoutes.js       # Analytics APIs
-│   │   ├── aiRoutes.js              # AI features
-│   │   ├── auditRoutes.js           # Audit logging
-│   │   ├── automationRoutes.js      # Automation config (8KB)
-│   │   ├── calendarRoutes.js        # Calendar integration
-│   │   ├── fileRoutes.js            # File management
-│   │   ├── notificationRoutes.js    # Notifications
-│   │   ├── reportRoutes.js          # Report generation
-│   │   ├── resourceRoutes.js        # Resource library
-│   │   ├── searchRoutes.js          # Global search
-│   │   ├── settingsRoutes.js        # System settings
-│   │   └── ... (12 more routes)
-│   ├── controllers/                 # 27 Business Logic Controllers
-│   │   ├── lectureController.js     # Largest (36KB)
-│   │   ├── reportController.js      # Report generation (25KB)
-│   │   ├── leaveController.js       # Leave logic (14KB)
-│   │   └── ... (24 more controllers)
-│   ├── services/                    # 13 Business Services
-│   │   ├── automationService.js     # Auto-approval/assignment
-│   │   ├── emailService.js          # Email notifications
-│   │   ├── errorLogger.js           # Error tracking
-│   │   └── ... (10 more services)
-│   ├── middleware/                  # 6 Middleware Modules
-│   │   ├── auth.js                  # JWT authentication
-│   │   ├── errorHandler.js          # Centralized error handling
-│   │   ├── roleCheck.js             # Role-based access
-│   │   └── ... (3 more middleware)
-│   ├── config/
-│   │   └── db.js                    # SQLite database config
-│   ├── constants/                   # Application constants
-│   ├── utils/                       # 9 Utility Modules
-│   │   ├── logger.js                # Winston logger
-│   │   ├── healthCheck.js           # Health check utilities
-│   │   ├── gracefulShutdown.js      # Graceful shutdown
-│   │   └── ... (6 more utils)
-│   ├── scripts/                     # Essential Core Scripts
-│   │   ├── setup/                   # Database initialization
-│   │   ├── maintenance/             # Health checks
-│   ├── __tests__/                   # Jest test suites
-│   ├── logs/                        # Application logs
-│   ├── backups/                     # Database backups
-│   ├── database.sqlite              # Main SQLite database
-│   ├── knexfile.js                  # Knex migration config
-│   ├── index.js                     # Server entry point
+│   │   ├── pages/                       #   45 page components
+│   │   │   ├── Dashboard.jsx            #     Main dashboard
+│   │   │   ├── AdminDashboard.jsx       #     Admin overview
+│   │   │   ├── HodDashboard.jsx         #     HOD dashboard
+│   │   │   ├── LeaveRequest.jsx         #     Submit leave requests
+│   │   │   ├── LeaveApproval.jsx        #     Approve/deny leaves
+│   │   │   ├── SubstituteAssignment.jsx #     Assign substitutes
+│   │   │   ├── MasterSchedule.jsx       #     Full college schedule
+│   │   │   ├── PersonalTimetable.jsx    #     Individual timetable
+│   │   │   ├── FacultyDirectory.jsx     #     Faculty management (39KB)
+│   │   │   ├── StudentDirectory.jsx     #     Student management (36KB)
+│   │   │   ├── Attendance.jsx           #     Mark attendance
+│   │   │   ├── Analytics.jsx            #     Analytics dashboard (20KB)
+│   │   │   ├── PredictiveAnalytics.jsx  #     AI predictions (19KB)
+│   │   │   ├── Announcements.jsx        #     Announcement system (22KB)
+│   │   │   ├── ResourceLibrary.jsx      #     Document repository (22KB)
+│   │   │   ├── SubjectManager.jsx       #     Subject management (47KB)
+│   │   │   ├── Settings.jsx             #     Operational settings (46KB)
+│   │   │   ├── AuditLogs.jsx            #     Audit log viewer
+│   │   │   ├── Login.jsx                #     Authentication
+│   │   │   └── ... (26 more pages)
+│   │   ├── components/                  #   22 reusable UI components
+│   │   ├── context/AuthContext.jsx       #   Authentication context
+│   │   ├── hooks/useAuth.js             #   Auth hooks
+│   │   ├── utils/api.js                 #   Axios config (base: /api/v1)
+│   │   ├── styles/                      #   Custom responsive styles
+│   │   ├── App.jsx                      #   Main app + routing
+│   │   └── main.jsx                     #   Entry point
+│   ├── vite.config.js
 │   └── package.json
 │
-├── uploads/                         # User uploaded files
-├── data/                            # Sample/seed data
-├── scripts/                         # 22 Root-level utility scripts
-├── .git/                            # Git repository
-├── .husky/                          # Git hooks
-├── ecosystem.config.js              # PM2 configuration
-├── docker-compose.yml               # Docker setup
+├── server/                              # ── Express Backend ─────────────
+│   ├── routes/                          #   27 API route modules
+│   ├── controllers/                     #   27 business logic controllers
+│   ├── services/                        #   13 business services
+│   ├── middleware/                      #   6 middleware modules
+│   ├── config/db.js                     #   SQLite + schema + seed logic
+│   ├── utils/                           #   9 utility modules
+│   ├── scripts/                         #   Setup & maintenance scripts
+│   ├── __tests__/                       #   Jest test suites
+│   ├── logs/                            #   Winston log files
+│   ├── backups/                         #   Database backups
+│   ├── database.sqlite                  #   Main database
+│   ├── knexfile.js                      #   Knex migration config
+│   ├── index.js                         #   Server entry point
+│   └── package.json
+│
+├── uploads/                             # User uploaded files
+├── data/                                # Sample/seed data (Excel)
+├── ecosystem.config.js                  # PM2 configuration
+├── docker-compose.yml                   # Docker setup
 ├── Dockerfile
-├── START.bat                        # Start script
-├── START_DEMO.bat                   # Demo startup with sample data
-├── package.json                     # Root package configuration
-├── .eslintrc.cjs                    # ESLint config
-├── .prettierrc.js                   # Prettier config
-├── .commitlintrc.js                 # Commitlint config
-├── .lintstagedrc.js                 # Lint-staged config
-└── README.md                        # This file
+├── START_DEMO.bat                       # One-click Windows launcher
+├── package.json                         # Root scripts
+└── README.md                            # ← You are here
+```
+
+---
+
+## 🖥 Frontend — Pages & Components
+
+### Page Catalog (45 Pages)
+
+#### Dashboards (4)
+| Page | File | Description |
+|------|------|-------------|
+| Main Dashboard | `Dashboard.jsx` | Role-based landing with key metrics |
+| Admin Dashboard | `AdminDashboard.jsx` | System-wide overview & stats |
+| HOD Dashboard | `HodDashboard.jsx` | Department management hub |
+| Role Dashboard | `RoleDashboard.jsx` | Dynamic role-based router |
+
+#### Leave & Substitute Management (7)
+| Page | File | Description |
+|------|------|-------------|
+| Leave Request | `LeaveRequest.jsx` | Submit and manage leave requests |
+| HOD Leave Request | `HODLeaveRequest.jsx` | HOD leave submission interface |
+| Leave Approval | `LeaveApproval.jsx` | Approve/deny pending leaves |
+| Leave Management | `LeaveManagement.jsx` | Overview of all leaves |
+| Substitute Assignment | `SubstituteAssignment.jsx` | Assign substitute teachers |
+| Substitute Report | `SubstituteReport.jsx` | Weekly substitute reports |
+| Substitute Analytics | `SubstituteAnalytics.jsx` | Substitute workload metrics |
+
+#### Schedule & Timetable (2)
+| Page | File | Description |
+|------|------|-------------|
+| Master Schedule | `MasterSchedule.jsx` | Complete college schedule |
+| Personal Timetable | `PersonalTimetable.jsx` | Individual timetable with auto-day update |
+
+#### Faculty & Students (3)
+| Page | File | Description |
+|------|------|-------------|
+| Faculty Directory | `FacultyDirectory.jsx` | Manage faculty members (39KB) |
+| Student Directory | `StudentDirectory.jsx` | Manage student records (36KB) |
+| User Credentials | `UserCredentials.jsx` | Manage user logins (28KB) |
+
+#### Assignments (3)
+| Page | File | Description |
+|------|------|-------------|
+| Assignment Manager | `AssignmentManager.jsx` | View all assignments |
+| Create Assignment | `CreateAssignment.jsx` | Create with file upload |
+| Assignment Details | `AssignmentDetails.jsx` | View assignment details |
+
+#### Attendance (3)
+| Page | File | Description |
+|------|------|-------------|
+| Attendance | `Attendance.jsx` | Mark student attendance |
+| Attendance Launcher | `AttendanceLauncher.jsx` | Launch attendance session |
+| Attendance Trends | `AttendanceTrends.jsx` | Attendance analytics |
+
+#### Analytics & Reports (6)
+| Page | File | Description |
+|------|------|-------------|
+| Analytics | `Analytics.jsx` | Main analytics dashboard (20KB) |
+| Predictive Analytics | `PredictiveAnalytics.jsx` | AI-powered predictions (19KB) |
+| Teacher Analytics | `TeacherAnalytics.jsx` | Faculty performance metrics |
+| Department Metrics | `DepartmentMetrics.jsx` | Department statistics |
+| Student Performance | `StudentPerformanceReports.jsx` | Student achievement reports |
+| Automation Dashboard | `AutomationDashboard.jsx` | Automation system metrics |
+
+#### Communication (2)
+| Page | File | Description |
+|------|------|-------------|
+| Announcements | `Announcements.jsx` | Create/view announcements (22KB) |
+| Inbox | `Inbox.jsx` | Internal messaging system |
+
+#### Resources & Library (2)
+| Page | File | Description |
+|------|------|-------------|
+| Resource Library | `ResourceLibrary.jsx` | Document repository (22KB) |
+| Subject Manager | `SubjectManager.jsx` | Subject management (47KB) |
+
+#### Evaluations (1)
+| Page | File | Description |
+|------|------|-------------|
+| Faculty Evaluations | `FacultyEvaluations.jsx` | Faculty performance evaluations |
+
+#### Audit & System (4)
+| Page | File | Description |
+|------|------|-------------|
+| Audit Logs | `AuditLogs.jsx` | System audit log viewer |
+| Audit Log Viewer | `AuditLogViewer.jsx` | Detailed audit view |
+| Data Management | `DataManagement.jsx` | Import/export data |
+| User Role Management | `UserRoleManagement.jsx` | Manage user roles |
+
+#### Settings & Configuration (2)
+| Page | File | Description |
+|------|------|-------------|
+| Settings | `Settings.jsx` | Operational admin settings (46KB) |
+| System Settings | `SystemSettings.jsx` | System configuration (23KB) |
+
+#### Authentication (5)
+| Page | File | Description |
+|------|------|-------------|
+| Login | `Login.jsx` | User authentication |
+| Register | `Register.jsx` | New user registration |
+| Forgot Password | `ForgotPassword.jsx` | Password recovery request |
+| Reset Password | `ResetPassword.jsx` | Password reset with token |
+| 404 | `NotFound.jsx` | Error page |
+
+---
+
+### Reusable Components (22)
+
+| Category | Components |
+|----------|-----------|
+| **Navigation** | `Navbar` · `Sidebar` · `Breadcrumb` |
+| **Layout** | `Card` · `Modal` · `Footer` |
+| **Data Display** | `Table` · `Chart` · `StatCard` · `Badge` · `Avatar` |
+| **Forms & Input** | `SearchBar` · `FilterPanel` · `DatePicker` · `TimePicker` · `Dropdown` · `FileUpload` |
+| **Utilities** | `Pagination` · `LoadingSpinner` · `ErrorBoundary` · `ProtectedRoute` · `Tooltip` |
+
+### Routing
+
+```
+Public:      /login  /register  /forgot-password  /reset-password
+Dashboards:  /dashboard  /admin-dashboard  /hod-dashboard
+Leave:       /leave-request  /leave-approval  /leave-management
+Substitute:  /substitute-assignment  /substitute-report  /substitute-analytics
+Schedule:    /master-schedule  /personal-timetable
+Directory:   /faculty-directory  /student-directory
+Assignments: /assignments  /create-assignment  /assignment/:id
+Attendance:  /attendance  /attendance-launcher  /attendance-trends
+Analytics:   /analytics  /predictive-analytics  /teacher-analytics  /department-metrics
+Comms:       /announcements  /inbox
+Resources:   /resource-library  /subject-manager
+Admin:       /audit-logs  /data-management  /user-credentials  /user-role-management
+Settings:    /settings  /system-settings
+```
+
+### State Management
+
+**AuthContext** provides: `user`, `token`, `login()`, `logout()`, `isAuthenticated`, `hasRole()`.
+
+```jsx
+const { user, hasRole, logout } = useContext(AuthContext);
+```
+
+---
+
+## 🔌 Backend — API Reference
+
+All routes are prefixed with `/api/v1`.
+
+### Authentication & Authorization
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/auth/login` | User authentication |
+| `POST` | `/auth/logout` | User logout |
+| `POST` | `/auth/register` | New user registration |
+| `GET` | `/auth/verify` | Verify JWT token |
+| `GET` | `/auth/profile` | Get user profile |
+| `PUT` | `/auth/change-password` | Change logged-in user's password |
+| `POST` | `/auth/forgot-password` | Request password reset |
+| `POST` | `/auth/reset-password` | Reset password with token |
+| `GET` | `/auth/verify-reset-token/:token` | Verify reset token |
+
+### User Management
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/teachers` | List all teachers |
+| `GET/POST/PUT/DELETE` | `/teachers/:id` | CRUD teachers |
+| `GET` | `/teachers/department/:id` | Teachers by department |
+| `GET` | `/teachers/available` | Available teachers |
+| `GET` | `/students` | List all students |
+| `GET/POST/PUT/DELETE` | `/students/:id` | CRUD students |
+| `GET` | `/hod/dashboard` | HOD dashboard data |
+| `GET` | `/hod/pending-approvals` | Pending leave approvals |
+| `GET` | `/admin/users` | All users (admin) |
+| `POST` | `/admin/bulk-upload` | Bulk user upload |
+| `GET` | `/admin/system-stats` | System statistics |
+
+### Leave & Substitute Management
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/leaves` | Fetch leaves (role-filtered) |
+| `POST` | `/leaves` | Submit leave request |
+| `GET` | `/leaves/:id` | Leave details |
+| `PUT` | `/leaves/:id/approve` | Approve/deny leave |
+| `DELETE` | `/leaves/:id` | Cancel leave |
+| `GET` | `/leaves/my-leaves` | User's leave history |
+| `GET` | `/leaves/pending` | Pending approvals (HOD) |
+| `GET` | `/leaves/statistics` | Leave statistics |
+| `GET` | `/leaves/lectures/needingsubstitutes` | Lectures needing substitutes |
+| `GET` | `/leaves/teachers/available` | Available substitute teachers |
+| `POST` | `/leaves/substitute/assign` | Assign substitute |
+| `GET` | `/leaves/substitute/report` | Weekly substitute report |
+| `PUT` | `/leaves/substitute/accept/:id` | Accept substitute assignment |
+| `PUT` | `/leaves/substitute/decline/:id` | Decline substitute assignment |
+
+### Academic
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/lectures/schedule` | Master schedule |
+| `GET` | `/lectures/my-timetable` | Personal timetable |
+| `GET` | `/lectures/conflicts` | Detect scheduling conflicts |
+| `GET/POST/PUT/DELETE` | `/lectures/:id` | CRUD lectures |
+| `GET/POST/PUT/DELETE` | `/subjects/:id` | CRUD subjects |
+| `GET/POST/PUT/DELETE` | `/assignments/:id` | CRUD assignments |
+| `POST` | `/assignments/:id/submit` | Submit assignment |
+| `GET/POST/PUT/DELETE` | `/evaluations/:id` | CRUD evaluations |
+
+### Communication
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET/POST/PUT/DELETE` | `/announcements/:id` | CRUD announcements |
+| `GET` | `/notifications` | User notifications |
+| `GET` | `/notifications/unread` | Unread count |
+| `PUT` | `/notifications/:id/read` | Mark as read |
+| `PUT` | `/notifications/read-all` | Mark all as read |
+
+### Resources & Files
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET/POST/DELETE` | `/resources/:id` | CRUD resources |
+| `GET` | `/resources/download/:id` | Download resource |
+| `POST` | `/files/upload` | File upload (multipart) |
+| `GET` | `/files/download/:id` | Download file |
+
+### Analytics & Reports
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/analytics/dashboard` | Dashboard analytics |
+| `GET` | `/analytics/department/:id` | Department metrics |
+| `GET` | `/analytics/teacher/:id` | Teacher analytics |
+| `GET` | `/analytics/student/:id` | Student performance |
+| `GET` | `/reports/attendance` | Attendance reports |
+| `GET` | `/reports/substitute` | Substitute reports |
+| `POST` | `/reports/generate` | Generate custom report |
+| `GET` | `/reports/export/:type` | Export (CSV/Excel/PDF) |
+
+### AI Features
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/ai/predict-workload` | Predict teacher workload |
+| `POST` | `/ai/recommend-substitute` | AI substitute recommendation |
+| `POST` | `/ai/analyze-patterns` | Pattern analysis |
+| `POST` | `/ai/optimize-schedule` | Schedule optimization |
+
+### System Management
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET/POST` | `/settings` | Bulk get/update all settings |
+| `GET/PUT` | `/settings/:key` | Single setting CRUD |
+| `GET/PUT` | `/config/settings` | System configuration |
+| `GET` | `/automation/config` | Automation timers |
+| `PUT` | `/automation/config` | Update automation timers |
+| `POST` | `/automation/trigger/:type` | Manual trigger |
+| `GET` | `/audit/logs` | Audit log entries |
+| `GET` | `/audit/export` | Export audit logs |
+| `POST` | `/admin/import/teachers` | Import teachers (CSV/Excel) |
+| `POST` | `/admin/import/students` | Import students |
+| `GET` | `/admin/export/database` | Full database export |
+| `GET` | `/search/global` | Global search |
+| `GET/POST/PUT/DELETE` | `/calendar/events/:id` | Calendar CRUD |
+| `GET` | `/health` | Health check |
+| `GET` | `/health/status` | System status |
+
+**Total**: 27 route modules · 100+ endpoints
+
+---
+
+## ⚙ Backend — Controllers & Services
+
+### Key Controllers
+
+| Controller | Size | Purpose |
+|-----------|------|---------|
+| `lectureController.js` | 36KB | Schedule management, conflict detection, timetable generation |
+| `reportController.js` | 25KB | PDF/Excel/CSV generation, custom report builder |
+| `leaveController.js` | 14KB | Leave request processing, approval workflow |
+| `aiController.js` | 14KB | Workload predictions, substitute recommendations |
+| `settingsController.js` | — | Bulk get/update of 13 system configuration keys |
+
+### Service Layer (13 Modules)
+
+| Service | Purpose |
+|---------|---------|
+| `automationService.js` | 30-min auto-approval & 15-min auto-assignment timers |
+| `emailService.js` | Nodemailer-based notifications (leave, approval, substitute, password reset) |
+| `notificationService.js` | In-app notification dispatch |
+| `reportService.js` | PDF (PDFKit), Excel (ExcelJS), CSV generation |
+| `analyticsService.js` | Metrics calculation, trend analysis, statistics |
+| `fileService.js` | Upload/download, type validation, storage |
+| `backupService.js` | Database backup & restore |
+| `migrationService.js` | Knex.js schema migrations |
+| `aiService.js` | Predictive analytics & recommendations |
+| `cacheService.js` | In-memory caching layer |
+| `validationService.js` | Input validation |
+| `cronService.js` | Scheduled tasks (daily reminders, weekly reports) |
+| `errorLogger.js` | Error tracking & pattern detection |
+
+### Middleware Stack (6 Modules)
+
+| Middleware | Purpose |
+|-----------|---------|
+| `authMiddleware.js` | JWT verification + role extraction |
+| `roleCheck.js` | Role-based access control |
+| `errorHandler.js` | Centralized error handling + 404 |
+| `validation.js` | Request body validation |
+| `rateLimitMiddleware.js` | Rate limiting (configurable) |
+| `upload.js` | Multer file upload config |
+
+---
+
+## 💾 Database
+
+**Engine**: SQLite 3 (WAL mode, auto-enabled on startup)
+**File**: `server/database.sqlite`
+**ORM**: Knex.js (migrations + query builder)
+**Backups**: Automatic to `server/backups/`
+
+### Schema Overview
+
+#### User Tables
+`users` · `teachers` · `students` · `admins` · `hods`
+
+#### Academic Tables
+`lectures` · `subjects` · `departments` · `divisions` · `rooms` · `time_slots` · `academic_years` · `designations` · `attendance`
+
+#### Leave & Substitute Tables
+`leave_requests` · `substitute_assignments` · `leave_approvals`
+
+#### Assignment Tables
+`assignments` · `assignment_submissions` · `assignment_files`
+
+#### Communication Tables
+`announcements` · `notifications` · `messages`
+
+#### Resource Tables
+`resources` · `resource_categories`
+
+#### Evaluation Tables
+`evaluations` · `evaluation_criteria`
+
+#### System Tables
+`settings` (key-value) · `audit_logs` · `user_preferences` · `files`
+
+### Migration Commands
+
+```bash
+npm run migrate:latest       # Run latest migrations
+npm run migrate:rollback     # Rollback last migration
+npm run migrate:status       # Check migration status
+npm run migrate:make <name>  # Create new migration
+```
+
+### System Settings (13 Keys)
+
+| Key | Tab | What It Controls |
+|-----|-----|-----------------|
+| `org_name` | Organization | Sidebar branding, report headers |
+| `org_code` | Organization | Roll numbers, document headers |
+| `admin_email` | Organization | Contact info on login/error screens |
+| `support_phone` | Organization | Support contact display |
+| `notification_frequency` | Organization | Digest frequency (instant/daily/weekly) |
+| `academic_year` | Academic | Dashboard filtering, report periods |
+| `current_semester` | Academic | Active semester context |
+| `attendance_threshold` | Academic | At-risk student flagging (%) |
+| `grading_scale` | Academic | Standard / GPA / CGPA / Percentage |
+| `auto_approval_minutes` | Academic | Leave auto-approval timer |
+| `auto_assignment_minutes` | Academic | Substitute auto-assignment timer |
+| `allow_registrations` | Users | Gates the `/register` page |
+| `maintenance_mode` | System | 503s all non-admin users |
+
+---
+
+## 🔐 Authentication & Security
+
+### Authentication Flow
+
+```
+1. POST /auth/login  →  Verify credentials  →  Issue JWT (httpOnly cookie)
+2. All requests  →  authMiddleware  →  Extract user from token
+3. Protected routes  →  roleCheck(['admin', 'hod'])  →  RBAC enforcement
+```
+
+### Security Layers
+
+| Layer | Implementation |
+|-------|---------------|
+| **Password Hashing** | Bcrypt (10 salt rounds) |
+| **JWT Tokens** | Signed with configurable `JWT_SECRET`, 7-day expiry |
+| **HTTP Headers** | Helmet.js — CSP, HSTS, X-Frame-Options, XSS Protection |
+| **CORS** | Whitelist-based origin configuration |
+| **Rate Limiting** | Configurable per-endpoint limits |
+| **Input Validation** | Parameterized queries (SQL injection prevention) + body validation |
+| **File Uploads** | Type/size restrictions via Multer |
+| **Audit Trail** | Comprehensive activity logging to `audit_logs` table |
+| **Maintenance Guard** | Middleware to lock non-admin access when maintenance mode is active |
+
+---
+
+## 🤖 Automation Engine
+
+```
+┌──────────────────────────────────────────────────────────┐
+│                   automationService.js                    │
+│                                                          │
+│  ┌─────────────────────────┐  ┌────────────────────────┐ │
+│  │  Auto-Approval Timer    │  │  Auto-Assignment Timer │ │
+│  │  (default: 30 min)      │  │  (default: 15 min)     │ │
+│  │                         │  │                         │ │
+│  │  • Checks every minute  │  │  • Checks for unassigned│ │
+│  │  • Auto-approves if HOD │  │    substitutes          │ │
+│  │    hasn't responded     │  │  • Matches by dept,     │ │
+│  │  • Sends notification   │  │    availability, load   │ │
+│  │  • Logs to audit trail  │  │  • Force-assigns if     │ │
+│  │                         │  │    no one accepts       │ │
+│  └─────────────────────────┘  └────────────────────────┘ │
+│                                                          │
+│  Scheduled Tasks (node-cron):                            │
+│  • Daily attendance reminders                            │
+│  • Weekly substitute reports                             │
+│  • Monthly analytics snapshots                           │
+│  • Periodic database backups                             │
+└──────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## 👥 User Roles & Permissions
 
-### Admin
-
-- Full system access
-- User management (create, edit, delete)
-- System configuration
-- Data management (import/export)
-- Audit log access
-- All analytics and reports
-- Database management
-
-### HOD (Head of Department)
-
-- Department-level management
-- Leave approval/denial
-- Faculty management within department
-- Department analytics
-- Substitute assignment oversight
-- Student management
-- Resource management
-- Announcements for department
-
-### Teacher
-
-- Personal timetable access
-- Leave request submission
-- Substitute acceptance/decline
-- Assignment creation and management
-- Resource upload and access
-- Student attendance marking
-- Class-specific announcements
-- Personal analytics
-
-### Student
-
-- Personal timetable view
-- Attendance records
-- Assignment submissions
-- Resource library access (view)
-- Announcements view
-- Personal performance reports
-
----
-
-## 🔌 API Endpoints
-
-### Authentication & Authorization
-
-**Base**: `/api/auth`
-
-- `POST /login` - User authentication
-- `POST /logout` - User logout
-- `POST /register` - New user registration
-- `POST /forgot-password` - Password reset request
-- `POST /reset-password` - Reset password with token
-- `GET /verify` - Verify JWT token
-
-### User Management
-
-**Teachers**: `/api/teachers`
-
-- `GET /` - List all teachers
-- `GET /:id` - Get teacher details
-- `POST /` - Create new teacher
-- `PUT /:id` - Update teacher
-- `DELETE /:id` - Delete teacher
-
-**Students**: `/api/students`
-
-- `GET /` - List all students
-- `GET /:id` - Get student details
-- `POST /` - Create new student
-- `PUT /:id` - Update student
-- `DELETE /:id` - Delete student
-
-**HOD**: `/api/hod`
-
-- `GET /dashboard` - HOD dashboard data
-- `GET /department-stats` - Department statistics
-
-**Admin**: `/api/admin`
-
-- `GET /users` - All users
-- `POST /users` - Create user
-- `PUT /users/:id` - Update user
-- `DELETE /users/:id` - Delete user
-- `GET /system-stats` - System statistics
-
-### Leave Management
-
-**Base**: `/api/leaves`
-
-- `GET /` - Fetch leave requests (filtered by role)
-- `POST /` - Submit new leave request
-- `GET /:id` - Get leave details
-- `PUT /:id/approve` - Approve/deny leave
-- `DELETE /:id` - Cancel leave request
-- `GET /my-leaves` - Current user's leave history
-- `GET /pending` - Pending approvals (HOD)
-- `GET /statistics` - Leave statistics
-
-### Substitute Management
-
-**Base**: `/api/leaves/substitute`
-
-- `GET /lectures/needingsubstitutes` - Lectures needing substitutes
-- `GET /teachers/available` - Find available teachers
-- `POST /assign` - Assign substitute manually
-- `GET /assignments` - Substitute assignment history
-- `GET /report` - Weekly substitute report
-- `GET /analytics` - Substitute workload analytics
-- `PUT /accept/:id` - Accept substitute assignment
-- `PUT /decline/:id` - Decline substitute assignment
-
-### Lecture & Timetable
-
-**Base**: `/api/lectures`
-
-- `GET /` - All lectures
-- `GET /schedule` - Master schedule
-- `GET /my-timetable` - Personal timetable
-- `POST /` - Create lecture
-- `PUT /:id` - Update lecture
-- `DELETE /:id` - Delete lecture
-- `GET /conflicts` - Detect schedule conflicts
-
-### Assignments
-
-**Base**: `/api/assignments`
-
-- `GET /` - List assignments
-- `GET /:id` - Get assignment details
-- `POST /` - Create assignment (with file upload)
-- `PUT /:id` - Update assignment
-- `DELETE /:id` - Delete assignment
-- `POST /:id/submit` - Submit assignment
-
-### Announcements
-
-**Base**: `/api/announcements`
-
-- `GET /` - List announcements (role-filtered)
-- `POST /` - Create announcement
-- `PUT /:id` - Update announcement
-- `DELETE /:id` - Delete announcement
-
-### Resource Library
-
-**Base**: `/api/resources`
-
-- `GET /` - List resources
-- `GET /:id` - Get resource details
-- `POST /` - Upload resource
-- `DELETE /:id` - Delete resource
-- `GET /download/:id` - Download resource
-
-### Analytics & Reports
-
-**Base**: `/api/analytics`
-
-- `GET /dashboard` - Analytics dashboard data
-- `GET /department/:id` - Department metrics
-- `GET /teacher/:id` - Teacher analytics
-- `GET /student/:id` - Student performance
-
-**Reports**: `/api/reports`
-
-- `GET /attendance` - Attendance reports
-- `GET /substitute` - Substitute reports
-- `GET /performance` - Performance reports
-- `POST /generate` - Generate custom report
-- `GET /export/:type` - Export report (CSV/Excel/PDF)
-
-### AI Features
-
-**Base**: `/api/ai`
-
-- `POST /predict-workload` - Predict teacher workload
-- `POST /recommend-substitute` - AI substitute recommendation
-- `GET /analytics` - AI-powered analytics
-- `POST /analyze-patterns` - Pattern analysis
-
-### Notifications
-
-**Base**: `/api/notifications`
-
-- `GET /` - User notifications
-- `GET /unread` - Unread count
-- `PUT /:id/read` - Mark as read
-- `PUT /read-all` - Mark all as read
-- `DELETE /:id` - Delete notification
-
-### Audit Logs
-
-**Base**: `/api/audit`
-
-- `GET /logs` - Audit log entries
-- `GET /user/:id` - User activity logs
-- `GET /export` - Export audit logs
-
-### Calendar
-
-**Base**: `/api/calendar`
-
-- `GET /events` - Calendar events
-- `POST /events` - Create event
-- `PUT /events/:id` - Update event
-- `DELETE /events/:id` - Delete event
-
-### Search
-
-**Base**: `/api/search`
-
-- `GET /global` - Global search across entities
-- `GET /teachers` - Search teachers
-- `GET /students` - Search students
-
-### System Configuration
-
-**Base**: `/api/config`
-
-- `GET /settings` - System settings
-- `PUT /settings` - Update settings
-- `GET /automation` - Automation timers
-- `PUT /automation` - Update automation config
-
-**Settings**: `/api/settings`
-
-- `GET /user` - User preferences
-- `PUT /user` - Update user preferences
-
-### File Management
-
-**Base**: `/api/files`
-
-- `POST /upload` - File upload
-- `GET /:id` - Get file
-- `DELETE /:id` - Delete file
-
-### Health & Monitoring
-
-**Base**: `/api/health`
-
-- `GET /` - Health check
-- `GET /status` - System status
-- `GET /metrics` - Performance metrics
-
----
-
-## 💾 Database
-
-**Type**: SQLite
-**File**: `server/database.sqlite`
-**ORM**: Knex.js (with migrations support)
-**Backup**: Automatic backups to `server/backups/`
-
-### Key Tables
-
-#### Core Tables
-
-- `users` - All system users (polymorphic)
-- `teachers` - Faculty information
-- `students` - Student enrollment
-- `admins` - Administrative users
-- `hods` - Head of department records
-
-#### Academic Tables
-
-- `lectures` - Master schedule/timetable
-- `subjects` - Course subjects
-- `departments` - Academic departments
-- `classes` - Class sections
-- `attendance` - Attendance records
-
-#### Leave & Substitute Tables
-
-- `leave_requests` - Leave applications
-- `substitute_assignments` - Substitute records
-- `leave_approvals` - Approval workflow history
-
-#### Assignment Tables
-
-- `assignments` - Assignment metadata
-- `assignment_submissions` - Student submissions
-- `assignment_files` - Uploaded files
-
-#### Communication Tables
-
-- `announcements` - System announcements
-- `notifications` - User notifications
-- `messages` - Internal messaging
-
-#### Resource Tables
-
-- `resources` - Document library
-- `resource_categories` - Resource organization
-
-#### Evaluation Tables
-
-- `evaluations` - Faculty evaluations
-- `evaluation_criteria` - Assessment criteria
-
-#### System Tables
-
-- `audit_logs` - Activity tracking
-- `system_settings` - Configuration
-- `user_preferences` - User-specific settings
-- `files` - File metadata
-
-### Database Operations
-
-```bash
-# Run migrations
-npm run migrate:latest
-
-# Rollback migrations
-npm run migrate:rollback
-
-# Check migration status
-npm run migrate:status
-
-# Create new migration
-npm run migrate:make migration_name
-```
+| Capability | Admin | HOD | Teacher | Student |
+|-----------|:-----:|:---:|:-------:|:-------:|
+| System configuration | ✅ | — | — | — |
+| User management (CRUD) | ✅ | — | — | — |
+| Audit logs | ✅ | — | — | — |
+| Data import/export | ✅ | — | — | — |
+| Database backup | ✅ | — | — | — |
+| Leave approval | ✅ | ✅ | — | — |
+| Department analytics | ✅ | ✅ | — | — |
+| Faculty management | ✅ | ✅ | — | — |
+| Substitute oversight | ✅ | ✅ | — | — |
+| Leave requests | ✅ | ✅ | ✅ | — |
+| Substitute acceptance | — | — | ✅ | — |
+| Assignment creation | ✅ | ✅ | ✅ | — |
+| Attendance marking | ✅ | ✅ | ✅ | — |
+| Resource upload | ✅ | ✅ | ✅ | — |
+| View timetable | ✅ | ✅ | ✅ | ✅ |
+| Assignment submission | — | — | — | ✅ |
+| View attendance | ✅ | ✅ | ✅ | ✅ |
+| View announcements | ✅ | ✅ | ✅ | ✅ |
 
 ---
 
@@ -778,44 +765,25 @@ npm run migrate:make migration_name
 
 - Node.js 16+
 - npm or yarn
-- Python 3.x (for seed scripts)
 
-### Installation
-
-```bash
-# Clone repository
-git clone <repository-url>
-cd lecture-manager
-
-# Install all dependencies (root, client, server)
-npm run setup
-
-# Or install manually
-npm install
-cd client && npm install
-cd ../server && npm install
-```
-
-### Development Scripts
+### Scripts
 
 #### Root Level
 
 ```bash
-npm run dev              # Start both client and server concurrently
+npm run dev              # Start both client + server concurrently
 npm run server           # Start only backend (port 3000)
 npm run client           # Start only frontend (port 5173)
-npm run setup            # Install all dependencies and seed data
-npm run seed             # Initialize database with sample data
+npm run setup            # Install all dependencies + seed data
 
-# PM2 Process Management
+# PM2
 npm run pm2:start        # Start with PM2
-npm run pm2:dev          # Start in development mode with PM2
+npm run pm2:dev          # Development mode with PM2
 npm run pm2:stop         # Stop PM2 processes
-npm run pm2:restart      # Restart PM2 processes
 npm run pm2:logs         # View PM2 logs
 npm run pm2:monit        # PM2 monitoring dashboard
 
-# Database Migrations
+# Migrations
 npm run migrate:latest   # Run latest migrations
 npm run migrate:rollback # Rollback last migration
 npm run migrate:status   # Migration status
@@ -824,23 +792,20 @@ npm run migrate:status   # Migration status
 npm run lint             # Run ESLint
 npm run lint:fix         # Auto-fix ESLint issues
 npm run format           # Format with Prettier
-npm run fix-console      # Remove console.logs
-
-# Git Hooks
 npm run prepare          # Install Husky git hooks
 ```
 
-#### Client Development
+#### Client Only
 
 ```bash
 cd client
-npm run dev              # Start Vite dev server (http://localhost:5173)
-npm run build            # Production build
+npm run dev              # Vite dev server (http://localhost:5173)
+npm run build            # Production build → dist/
 npm run preview          # Preview production build
 npm run lint             # Lint frontend code
 ```
 
-#### Server Development
+#### Server Only
 
 ```bash
 cd server
@@ -849,27 +814,25 @@ npm run dev              # Start with nodemon (auto-reload)
 npm test                 # Run Jest tests
 npm run test:watch       # Jest watch mode
 npm run test:coverage    # Test coverage report
-npm run lint             # Lint backend code
-npm run lint:fix         # Auto-fix backend linting
 ```
 
 ### Environment Variables
 
-Create `.env` file in the `server/` directory:
+Create `server/.env`:
 
 ```env
-# Server Configuration
+# Server
 PORT=3000
 NODE_ENV=development
 
 # Database
 DATABASE_URL=./database.sqlite
 
-# JWT Authentication
+# JWT
 JWT_SECRET=generate-a-strong-random-string-at-least-32-chars
 JWT_EXPIRY=7d
 
-# Email Configuration (optional)
+# Email (optional)
 EMAIL_USER=your-email@college.edu
 EMAIL_PASS=your-app-password
 EMAIL_FROM=noreply@college.edu
@@ -879,7 +842,7 @@ AUTO_APPROVAL_TIME=30
 AUTO_ASSIGNMENT_TIME=15
 
 # File Upload
-MAX_FILE_SIZE=10485760  # 10MB in bytes
+MAX_FILE_SIZE=10485760  # 10MB
 UPLOAD_DIR=./uploads
 
 # Logging
@@ -887,59 +850,29 @@ LOG_LEVEL=info
 LOG_FILE=./logs/app.log
 ```
 
+Create `client/.env`:
+
+```env
+VITE_API_URL=http://localhost:3000
+VITE_APP_NAME=LecMan
+```
+
 ---
 
-## 🔒 Security
+## 🧪 Testing
 
-### Implemented Security Measures
+### Jest Test Suites
 
-1. **Authentication & Authorization**
-
-   - JWT-based authentication
-   - Bcrypt password hashing (salt rounds: 10)
-   - Token expiration and refresh
-   - Role-based access control (RBAC)
-2. **HTTP Security Headers** (Helmet.js)
-
-   - Content Security Policy (CSP)
-   - XSS Protection
-   - HSTS (HTTP Strict Transport Security)
-   - Frame denial (X-Frame-Options)
-   - MIME type sniffing prevention
-3. **Input Validation**
-
-   - Request body validation
-   - SQL injection prevention (parameterized queries)
-   - File upload restrictions
-   - Input sanitization
-4. **API Security**
-
-   - CORS configuration
-   - Rate limiting (recommended for production)
-   - Request size limits
-   - Secure file uploads
-5. **Data Protection**
-
-   - Password encryption
-   - Sensitive data masking in logs
-   - Secure session management
-6. **Audit Trail**
-
-   - Comprehensive activity logging
-   - User action tracking
-   - Security event monitoring
-
-### Security Best Practices for Production
+| Suite | File | Coverage |
+|-------|------|---------|
+| Authentication | `auth.test.js` | Login, register, JWT, password reset |
+| Leave Management | `leave.test.js` | CRUD, approval workflow, auto-approval |
+| Substitute Assignment | `substitute.test.js` | Matching, assignment, acceptance flow |
 
 ```bash
-# 1. Change default credentials
-# 2. Use strong JWT_SECRET
-# 3. Enable HTTPS
-# 4. Set NODE_ENV=production
-# 5. Configure rate limiting
-# 6. Regular security updates
-# 7. Database backups
-# 8. Monitor audit logs
+npm test                 # Run all tests
+npm run test:watch       # Watch mode
+npm run test:coverage    # Coverage report
 ```
 
 ---
@@ -948,203 +881,136 @@ LOG_FILE=./logs/app.log
 
 ### Production Checklist
 
-- [ ] Update environment variables in `.env`
-- [ ] Change default user credentials
-- [ ] Set strong `JWT_SECRET`
-- [ ] Set `NODE_ENV=production`
-- [X] Database WAL mode programmed in config/db.js
-- [ ] Configure email service (SMTP)
+- [ ] Set `NODE_ENV=production` in `.env`
+- [ ] Set a strong `JWT_SECRET` (32+ characters)
+- [ ] Change default admin credentials
+- [x] WAL mode auto-enabled in `config/db.js`
+- [ ] Configure SMTP email service
 - [ ] Setup HTTPS/SSL certificates
 - [ ] Configure reverse proxy (nginx recommended)
 - [ ] Enable log rotation
-- [ ] Setup automated backups
-- [ ] Run health checks: `node server/scripts/maintenance/verify_all_systems.js`
-- [ ] Test on multiple devices/browsers
+- [ ] Setup automated database backups
 - [ ] Configure PM2 for process management
-- [ ] Setup monitoring and alerts
+- [ ] Run health check: `node server/scripts/maintenance/verify_all_systems.js`
 
-### Deployment Options
-
-#### Option 1: PM2 (Recommended for VPS)
+### Option 1 — PM2 (Recommended for VPS)
 
 ```bash
-# Install PM2 globally
 npm install -g pm2
-
-# Start with ecosystem config
 pm2 start ecosystem.config.js
-
-# Enable PM2 startup on boot
-pm2 startup
-pm2 save
-
-# Monitor
-pm2 monit
+pm2 startup && pm2 save    # Auto-start on boot
+pm2 monit                  # Monitoring dashboard
 ```
 
-#### Option 2: Docker
+### Option 2 — Docker
 
 ```bash
-# Build and run with Docker Compose
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop
-docker-compose down
+docker-compose up -d       # Build & run
+docker-compose logs -f     # View logs
+docker-compose down        # Stop
 ```
 
-#### Option 3: Manual Deployment
+### Option 3 — Manual
 
 ```bash
-# Build frontend
-cd client
-npm run build
-
-# Start backend
-cd ../server
-NODE_ENV=production npm start
+cd client && npm run build             # Build frontend → dist/
+cd ../server && NODE_ENV=production npm start  # Start backend
 ```
 
-### Performance Optimization
+### Performance Optimizations
 
-# Already handled programmatically on startup by config/db.js
-
-2. **Frontend Optimization**
-
-   - Code splitting enabled (Vite)
-   - Lazy loading for routes
-   - Asset optimization
-3. **Backend Optimization**
-
-   - Database query optimization
-   - Response caching (implement as needed)
-   - Connection pooling
+| Area | Implementation |
+|------|---------------|
+| **Database** | WAL mode (auto-enabled), parameterized queries |
+| **Frontend** | Code splitting (Vite), lazy loading, tree shaking, asset minification |
+| **Backend** | Response caching, connection pooling, query optimization |
 
 ---
 
 ## 🐛 Troubleshooting
 
-### Common Issues
-
-#### Server won't start
+<details>
+<summary><strong>Server won't start</strong></summary>
 
 ```bash
-# Kill existing Node processes
-taskkill /F /IM node.exe
-
-# Clear node_modules and reinstall
+taskkill /F /IM node.exe                    # Kill existing Node processes
 cd server && rm -rf node_modules && npm install
-cd client && rm -rf node_modules && npm install
-
-# Restart
-START_DEMO.bat
+cd ../client && rm -rf node_modules && npm install
+npm run dev
 ```
+</details>
 
-#### Database locked error
+<details>
+<summary><strong>Database locked error</strong></summary>
 
 ```bash
-# Delete WAL files if corrupted
 del server\database.sqlite-wal
 del server\database.sqlite-shm
-del database.sqlite-shm
 ```
+</details>
 
-#### Port already in use
+<details>
+<summary><strong>Port already in use</strong></summary>
 
 ```bash
-# Find process using port 3000
-netstat -ano | findstr :3000
-
-# Kill the process (replace PID)
-taskkill /PID <process_id> /F
+netstat -ano | findstr :3000        # Find process
+taskkill /PID <process_id> /F       # Kill it
+# Or change PORT in server/.env
 ```
+</details>
 
-#### Frontend build fails
+<details>
+<summary><strong>Frontend build fails</strong></summary>
 
 ```bash
 cd client
-npm run build
-
-# If fails, clear cache
-rm -rf node_modules .vite
-npm install
-npm run build
+rm -rf node_modules .vite dist
+npm install && npm run build
 ```
+</details>
 
-#### Missing dependencies
+<details>
+<summary><strong>File upload issues</strong></summary>
 
 ```bash
-# Reinstall all dependencies
-npm run setup
-
-# Or manually
-npm install
-cd client && npm install
-cd ../server && npm install
+mkdir uploads                       # Ensure directory exists
+# Check MAX_FILE_SIZE in server/.env (default: 10MB)
 ```
+</details>
 
-#### File upload issues
+<details>
+<summary><strong>Email not sending</strong></summary>
 
 ```bash
-# Check uploads directory exists
-mkdir uploads
-
-# Check file size limits in .env
-MAX_FILE_SIZE=10485760  # 10MB
+# Verify EMAIL_USER, EMAIL_PASS in server/.env
+# Use an "App Password", not your regular password
+# Check SMTP connectivity
 ```
+</details>
 
-### Logging & Debugging
-
-#### View Application Logs
+### Logs & Health
 
 ```bash
-# Winston logs
-tail -f server/logs/app.log
-tail -f server/logs/error.log
-
-# PM2 logs
-pm2 logs
-
-# Real-time monitoring
-pm2 monit
-```
-
-#### Check System Health
-
-```bash
-# Run health verification
-node server/scripts/maintenance/verify_all_systems.js
-
-# Check API health
-curl http://localhost:3000/api/health
+tail -f server/logs/app.log          # Application logs
+tail -f server/logs/error.log        # Error logs
+pm2 logs                             # PM2 logs
+curl http://localhost:3000/api/v1/health  # Health check
+node server/scripts/maintenance/verify_all_systems.js  # Full system verification
 ```
 
 ---
 
-## 📊 Performance Metrics
+## 📊 Performance
 
-| Metric                | Target | Current Status |
-| --------------------- | ------ | -------------- |
-| API Response Time     | <500ms | <200ms ✅      |
-| Auto-approval Rate    | 25-35% | 30-40% ✅      |
-| System Uptime         | >99.5% | 99%+ ✅        |
-| Concurrent Users      | 100+   | Load Tested ✅ |
-| Database Queries      | <100ms | <50ms ✅       |
-| Frontend Load Time    | <3s    | <2s ✅         |
-| Mobile Responsiveness | 100%   | 100% ✅        |
-
----
-
-## 📚 Documentation
-
-- **Implementation Plans**: See `docs/implementation/`
-- **System Analysis**: See `docs/analysis/SYSTEM_ANALYSIS.md`
-- **API Documentation**: See `server/README.md`
-- **Frontend Guide**: See `client/README.md`
-- **Setup Guides**: See `docs/guides/`
-- **Error Logs**: Check `server/logs/errors.log`
+| Metric | Target | Status |
+|--------|--------|--------|
+| API Response Time | < 500ms | < 200ms ✅ |
+| Frontend Load Time | < 3s | < 2s ✅ |
+| Database Queries | < 100ms | < 50ms ✅ |
+| Concurrent Users | 100+ | Load Tested ✅ |
+| Mobile Responsive | 100% | 100% ✅ |
+| Lighthouse Score | > 90 | ✅ |
+| System Uptime | > 99.5% | 99%+ ✅ |
 
 ---
 
@@ -1152,54 +1018,50 @@ curl http://localhost:3000/api/health
 
 ### Code Quality Standards
 
-1. **Linting**: All code must pass ESLint
-2. **Formatting**: Use Prettier for formatting
-3. **Commits**: Follow conventional commits (enforced by Commitlint)
-4. **Testing**: Write tests for new features
-5. **Documentation**: Update README for new features
+1. **Linting** — All code must pass ESLint
+2. **Formatting** — Prettier enforced on commit
+3. **Commits** — Conventional commits via Commitlint (`feat:`, `fix:`, `docs:`)
+4. **Testing** — Write tests for new features
+5. **Documentation** — Update this README for new features
 
 ### Git Workflow
 
 ```bash
-# Pre-commit hooks automatically run:
-# - ESLint
-# - Prettier
-# - Commitlint
-
-# Commit format
+# Pre-commit hooks automatically run ESLint + Prettier + Commitlint
 git commit -m "feat: add new feature"
 git commit -m "fix: resolve bug"
 git commit -m "docs: update README"
 ```
 
----
+### Adding New Features
 
-## 📄 License
-
-Proprietary - College Internal Use Only
-
----
-
-## 🏗️ Built With
-
-**Frontend**: React 19 • Vite 7 • TailwindCSS 4 • Framer Motion • Recharts • Chart.js
-**Backend**: Node.js • Express 4 • SQLite3 • Knex.js • Winston • JWT
-**DevOps**: PM2 • Docker • ESLint • Prettier • Husky
-**Developed**: January 2026 - February 2026
-**Status**: ✅ Production Ready • 🚀 Enterprise Grade
+1. **Backend**: Create route in `routes/` → controller in `controllers/` → service in `services/`
+2. **Frontend**: Create page in `pages/` → add route in `App.jsx`
+3. Run `npm run lint` before committing
 
 ---
 
-## 📞 Support
+## 📄 License & Support
 
-For issues, feature requests, or questions:
+**License**: Proprietary — College Internal Use Only
 
+**Support**:
 1. Check documentation in `docs/` folder
 2. Review error logs in `server/logs/`
 3. Run system verification: `node server/scripts/maintenance/verify_all_systems.js`
-4. Check health endpoint: `http://localhost:3000/api/health`
+4. Check health endpoint: `http://localhost:3000/api/v1/health`
 
 ---
 
-**Last Updated**: February 9, 2026
-**Next Review**: March 2026
+<p align="center">
+  <strong>Built with</strong><br />
+  React 19 · Vite 7 · TailwindCSS 4 · Framer Motion · Recharts · Chart.js<br />
+  Node.js · Express 4 · SQLite 3 · Knex.js · Winston · JWT · Nodemailer<br />
+  PM2 · Docker · ESLint · Prettier · Husky
+</p>
+
+<p align="center">
+  <strong>Developed</strong>: January 2026 – March 2026<br />
+  <strong>Status</strong>: ✅ Production Ready · 🚀 Enterprise Grade<br />
+  <strong>Last Updated</strong>: March 24, 2026
+</p>
