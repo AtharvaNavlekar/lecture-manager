@@ -9,7 +9,10 @@ import {
     ClockCountdown,
     CheckCircle,
     UsersThree,
-    ArrowRight
+    ArrowRight,
+    HandWaving,
+    Sparkle,
+    Confetti
 } from '@phosphor-icons/react';
 import SandyLoader from '../components/SandyLoader';
 
@@ -66,7 +69,10 @@ const Dashboard = () => {
 
             >
                 <div className="relative z-10">
-                    <h1 className="text-xl md:text-3xl font-bold text-white mb-2">Welcome back, {user?.name.split(' ')[0]} 👋</h1>
+                    <h1 className="text-xl md:text-3xl font-bold text-white mb-2 flex items-center gap-2">
+                        Welcome back, {user?.name.split(' ')[0]}
+                        <HandWaving className="text-amber-300" weight="fill" />
+                    </h1>
                     <p className="text-blue-100/90 text-sm md:text-lg">You have <strong className="text-white">{pendingCount} classes</strong> remaining today.</p>
                 </div>
                 <div className="absolute right-0 top-0 h-full w-1/3 bg-white/10 skew-x-12 transform origin-bottom-right"></div>
@@ -106,7 +112,7 @@ const Dashboard = () => {
                 >
                     <div className="absolute top-0 right-0 w-64 h-64 bg-violet-500/10 rounded-full blur-[80px] pointer-events-none" />
                     <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                        <span className="text-2xl">✨</span> AI Attendance Forecast
+                        <Sparkle className="text-indigo-400" weight="fill" /> AI Attendance Forecast
                     </h3>
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4 relative z-10">
                         {data.forecast.map((item, idx) => (
@@ -145,8 +151,9 @@ const Dashboard = () => {
 
                 <div className="space-y-4">
                     {myLecs.length === 0 ? (
-                        <div className="text-center py-10 text-gray-500 bg-white/5 rounded-xl">
-                            No classes scheduled for today. Enjoy your day! 🎉
+                        <div className="text-center py-10 text-gray-500 bg-white/5 rounded-xl flex flex-col items-center gap-2">
+                            <Confetti size={32} className="text-indigo-400/50" />
+                            No classes scheduled for today. Enjoy your day!
                         </div>
                     ) : (
                         myLecs.map((lec, index) => (

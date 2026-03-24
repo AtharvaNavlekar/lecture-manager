@@ -34,6 +34,9 @@ const StudentPerformanceReports = () => {
     const [students, setStudents] = useState([]);
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [loadingData, setLoadingData] = useState(false);
+    const [studentStats, setStudentStats] = useState(null);
+    const [studentRecords, setStudentRecords] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
 
     // Filters
@@ -61,8 +64,24 @@ const StudentPerformanceReports = () => {
         }
     };
 
+    const fetchStudentData = async (studentId) => {
+        setLoadingData(true);
+        try {
+            const res = await api.get(`/reports/attendance/student/${studentId}`);
+            if (res.data.success) {
+                setStudentStats(res.data.summary);
+                setStudentRecords(res.data.records);
+            }
+        } catch (err) {
+            logger.error('Fetch student data error:', err);
+        } finally {
+            setLoadingData(false);
+        }
+    };
+
     const handleSelectStudent = (student) => {
         setSelectedStudent(student);
+        fetchStudentData(student.id);
     };
 
     const filteredStudents = students.filter(student => {
@@ -221,21 +240,102 @@ const StudentPerformanceReports = () => {
                                 </div>
                             </div>
 
-                            {/* Empty State Content */}
-                            <div className="flex-1 overflow-y-auto p-4 md:p-4 md:p-6 lg:p-8 custom-scrollbar flex flex-col items-center justify-center">
-                                <div className="max-w-md text-center">
-                                    <div className="w-20 h-20 mx-auto rounded-3xl bg-slate-800/50 border border-white/5 flex items-center justify-center mb-6 rotated-3d relative group">
-                                        <div className="absolute inset-0 bg-indigo-500/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                        <Medal size={40} className="text-slate-600 group-hover:text-indigo-400 transition-colors relative z-10" weight="duotone" />
+                            {/* Content Area */}
+                            <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 custom-scrollbar">
+                                {loadingData ? (
+                                    <div className="flex flex-col items-center justify-center h-full text-slate-500 animate-pulse">
+                                        <div className="w-8 h-8 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin mb-4" />
+                                        <div className="text-sm">Loading performance data...</div>
                                     </div>
-                                    <h3 className="text-xl font-bold text-white mb-2">No Performance Records</h3>
-                                    <p className="text-slate-400 text-sm leading-relaxed mb-6">
-                                        There are no academic performance records, grades, or attendance stats available for <span className="text-indigo-300">{selectedStudent.name}</span> yet.
-                                    </p>
-                                    <div className="p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/10 text-xs text-indigo-300/70">
-                                        Once exams are conducted and grades are uploaded, performance analytics will appear here automatically.
+                                ) : !studentStats || studentStats.totalClasses === 0 ? (
+                                    <div className="flex flex-col items-center justify-center h-full">
+                                        <div className="max-w-md text-center">
+                                            <div className="w-20 h-20 mx-auto rounded-3xl bg-slate-800/50 border border-white/5 flex items-center justify-center mb-6 rotated-3d relative group">
+                                                <div className="absolute inset-0 bg-indigo-500/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                                <Medal size={40} className="text-slate-600 group-hover:text-indigo-400 transition-colors relative z-10" weight="duotone" />
+                                            </div>
+                                            <h3 className="text-xl font-bold text-white mb-2">No Performance Records</h3>
+                                            <p className="text-slate-400 text-sm leading-relaxed mb-6">
+                                                There are no academic performance records, grades, or attendance stats available for <span className="text-indigo-300">{selectedStudent.name}</span> yet.
+                                            </p>
+                                        </div>
                                     </div>
-                                </div>
+                                ) : (
+                                    <div className="space-y-8">
+                                        {/* KPIs */}
+                                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                            <div className="glass p-5 rounded-2xl border border-white/5 relative overflow-hidden group hover:border-indigo-500/30 transition-all">
+                                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                                    <BookOpen size={48} weight="duotone" className="text-indigo-500" />
+                                                </div>
+                                                <p className="text-sm text-slate-400 mb-1">Total Classes</p>
+                                                <p className="text-3xl font-bold text-white">{studentStats.totalClasses}</p>
+                                            </div>
+                                            <div className="glass p-5 rounded-2xl border border-white/5 relative overflow-hidden group hover:border-emerald-500/30 transition-all">
+                                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                                    <TrendUp size={48} weight="duotone" className="text-emerald-500" />
+                                                </div>
+                                                <p className="text-sm text-slate-400 mb-1">Present</p>
+                                                <p className="text-3xl font-bold text-emerald-400">{studentStats.present}</p>
+                                            </div>
+                                            <div className="glass p-5 rounded-2xl border border-white/5 relative overflow-hidden group hover:border-rose-500/30 transition-all">
+                                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                                    <TrendUp size={48} weight="duotone" className="text-rose-500 transform rotate-180" />
+                                                </div>
+                                                <p className="text-sm text-slate-400 mb-1">Absent</p>
+                                                <p className="text-3xl font-bold text-rose-400">{studentStats.absent}</p>
+                                            </div>
+                                            <div className="glass p-5 rounded-2xl border border-white/5 relative overflow-hidden group hover:border-indigo-500/30 transition-all">
+                                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                                    <ChartBar size={48} weight="duotone" className="text-indigo-500" />
+                                                </div>
+                                                <p className="text-sm text-slate-400 mb-1">Attendance %</p>
+                                                <p className="text-3xl font-bold text-white">{studentStats.attendancePercentage}%</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Charts */}
+                                        <div className="glass p-6 rounded-2xl border border-white/5">
+                                            <h3 className="text-lg font-bold text-white mb-6">Attendance Overview</h3>
+                                            <div className="h-64">
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                    <BarChart data={[
+                                                        { name: 'Present', value: studentStats.present, fill: '#34d399' },
+                                                        { name: 'Absent', value: studentStats.absent, fill: '#fb7185' }
+                                                    ]} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
+                                                        <XAxis dataKey="name" stroke="#64748b" tick={{ fill: '#64748b' }} axisLine={false} tickLine={false} />
+                                                        <YAxis stroke="#64748b" tick={{ fill: '#64748b' }} axisLine={false} tickLine={false} />
+                                                        <Tooltip
+                                                            cursor={{ fill: '#ffffff05' }}
+                                                            contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #ffffff10', borderRadius: '12px', color: '#fff' }}
+                                                            itemStyle={{ color: '#fff' }}
+                                                        />
+                                                        <Bar dataKey="value" radius={[4, 4, 0, 0]} />
+                                                    </BarChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        </div>
+
+                                        {/* Recent Records */}
+                                        <div className="glass p-6 rounded-2xl border border-white/5">
+                                            <h3 className="text-lg font-bold text-white mb-4">Recent Records</h3>
+                                            <div className="space-y-3">
+                                                {studentRecords.slice(0, 5).map((record, idx) => (
+                                                    <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+                                                        <div className="flex flex-col">
+                                                            <span className="font-medium text-white">{record.subject}</span>
+                                                            <span className="text-xs text-slate-400">{record.date} • {record.start_time} - {record.end_time}</span>
+                                                        </div>
+                                                        <div className={`px-3 py-1 rounded-full text-xs font-bold ${record.status === 'present' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
+                                                            {record.status.toUpperCase()}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}

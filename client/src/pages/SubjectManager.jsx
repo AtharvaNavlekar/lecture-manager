@@ -63,6 +63,9 @@ const SubjectManager = () => {
     // If admin is NOT detected, default to user's department
     const [deptFilter, setDeptFilter] = useState(user.role === 'admin' ? 'All' : user.department);
 
+    const uniqueDepartments = [...new Set(subjects.map(s => s.department).filter(Boolean))].sort();
+    const uniqueClasses = [...new Set(subjects.map(s => s.class_year).filter(Boolean))].sort();
+
     // Filter Logic
     const filteredSubjects = subjects.filter(subject => {
         const matchesSearch = subject.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -115,7 +118,8 @@ const SubjectManager = () => {
                 }
             }
 
-            setUnitImportLog(`Completed! ✅ ${successCount} successful, ❌ ${errorCount} failed`);
+            setUnitImportLog(`Completed! ${successCount} successful, ${errorCount} failed`);
+            toast.success('Import completed successfully');
             if (selectedSubject) fetchSyllabus(selectedSubject.id);
         } catch (err) {
             setUnitImportLog('Error: ' + (err.response?.data?.message || err.message));
@@ -248,7 +252,8 @@ const SubjectManager = () => {
                 }
             }
 
-            setImportLog(`Completed! ✅ ${successCount} successful, ❌ ${errorCount} failed`);
+            setImportLog(`Completed! ${successCount} successful, ${errorCount} failed`);
+            toast.success('Import completed successfully');
             fetchSubjects();
         } catch (err) {
             setImportLog('Error: ' + (err.response?.data?.message || err.message));
@@ -362,7 +367,7 @@ const SubjectManager = () => {
                     {user.role === 'admin' && (
                         <div className="relative w-full md:w-48 z-[50]">
                             <CustomSelect
-                                options={[{ value: 'All', label: 'All Depts' }, ...(departments || []).map(d => ({ value: d.name, label: d.name }))]}
+                                options={[{ value: 'All', label: 'All Depts' }, ...uniqueDepartments.map(d => ({ value: d, label: d }))]}
                                 value={deptFilter}
                                 onChange={(e) => setDeptFilter(e.target.value)}
                                 className="h-full bg-[#0B1221] border-white/10 py-0"
@@ -372,7 +377,7 @@ const SubjectManager = () => {
                     {/* Class Filter */}
                     <div className="relative w-full md:w-40 z-[50]">
                         <CustomSelect
-                            options={[{ value: 'All', label: 'All Classes' }, ...(academicYears || []).map(y => ({ value: y.code, label: y.name }))]}
+                            options={[{ value: 'All', label: 'All Classes' }, ...uniqueClasses.map(c => ({ value: c, label: c }))]}
                             value={classFilter}
                             onChange={(e) => setClassFilter(e.target.value)}
                             className="h-full bg-[#0B1221] border-white/10 py-0"

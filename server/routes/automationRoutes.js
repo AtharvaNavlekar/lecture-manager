@@ -81,22 +81,21 @@ router.get('/pending', async (req, res) => {
     try {
         const assignments = await dbAll(`
             SELECT 
-                sa.id, sa.lecture_id, sa.assigned_at, sa.response_deadline,
+                sa.id, sa.lecture_id, sa.assigned_at,
                 l.subject, l.class_year, l.date, l.time_slot,
                 t.name as original_teacher
             FROM substitute_assignments sa
             JOIN lectures l ON sa.lecture_id = l.id
             JOIN teachers t ON sa.original_teacher_id = t.id
             WHERE sa.status = 'pending'
-            ORDER BY sa.response_deadline ASC
+            ORDER BY sa.assigned_at ASC
         `);
 
         // Add calculated time remaining
         const now = new Date();
         const assignmentsWithTime = assignments.map(a => {
-            const deadline = new Date(a.response_deadline);
-            // If response_deadline is null (legacy), assume +15 mins from assigned_at
-            const effectiveDeadline = a.response_deadline ? deadline : new Date(new Date(a.assigned_at).getTime() + 15 * 60000);
+            // Assume 15 mins from assigned_at
+            const effectiveDeadline = new Date(new Date(a.assigned_at).getTime() + 15 * 60000);
             const remaining = Math.max(0, Math.floor((effectiveDeadline - now) / 1000));
 
             return {
@@ -133,7 +132,7 @@ router.post('/override', async (req, res) => {
             UPDATE substitute_assignments
             SET substitute_teacher_id = ?,
                 status = 'assigned',
-                assignment_type = 'manual_override'
+                auto_assigned = 0
             WHERE id = ?
         `, [substitute_teacher_id, assignment_id]);
 
@@ -167,7 +166,7 @@ router.get('/logs', async (req, res) => {
         // we'll fetch recent assignments as a proxy for "Activity"
         const logs = await dbAll(`
             SELECT 
-                sa.id, sa.status, sa.assignment_type, sa.assigned_at,
+                sa.id, sa.status, sa.auto_assigned, sa.assigned_at,
                 t_sub.name as substitute_name,
                 l.subject, l.class_year
             FROM substitute_assignments sa
@@ -181,7 +180,7 @@ router.get('/logs', async (req, res) => {
         const formattedLogs = logs.map(log => ({
             id: log.id,
             timestamp: log.assigned_at,
-            type: log.status === 'auto-assigned' ? 'AUTO_ASSIGN' : (log.assignment_type === 'manual_override' ? 'MANUAL_OVERRIDE' : 'ASSIGNMENT'),
+            type: log.auto_assigned === 1 ? 'AUTO_ASSIGN' : 'MANUAL_OVERRIDE',
             description: log.status === 'unassigned'
                 ? `Failed to find substitute for ${log.subject} (${log.class_year})`
                 : `Assigned ${log.substitute_name} to ${log.subject} (${log.class_year})`

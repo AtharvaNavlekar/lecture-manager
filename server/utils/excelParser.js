@@ -195,7 +195,15 @@ const validateStudentData = async (rows) => {
     const validRows = [];
 
     // Fetch valid departments once for all rows
-    const validDepts = await getValidDepartments();
+    let validDepts = [];
+    try {
+        validDepts = await getValidDepartments();
+        if (!validDepts || validDepts.length === 0) {
+            console.warn('⚠️ No active departments found in database. Skipping department validation for students.');
+        }
+    } catch (err) {
+        console.error('❌ Failed to fetch departments:', err.message);
+    }
 
     for (let index = 0; index < rows.length; index++) {
         const row = rows[index];
@@ -215,7 +223,7 @@ const validateStudentData = async (rows) => {
 
         // Validate department if provided
         let cleanDept = (row.department || row.Department || 'CS').trim();
-        if (cleanDept) {
+        if (cleanDept && validDepts && validDepts.length > 0) {
             const deptValidation = await validateDepartmentCode(cleanDept, validDepts);
             if (!deptValidation.valid) {
                 if (deptValidation.suggestion) {
@@ -249,7 +257,15 @@ const validateSubjectData = async (rows) => {
     const validRows = [];
 
     // Fetch valid departments once for all rows
-    const validDepts = await getValidDepartments();
+    let validDepts = [];
+    try {
+        validDepts = await getValidDepartments();
+        if (!validDepts || validDepts.length === 0) {
+            console.warn('⚠️ No active departments found in database. Skipping department validation for subjects.');
+        }
+    } catch (err) {
+        console.error('❌ Failed to fetch departments:', err.message);
+    }
 
     for (let index = 0; index < rows.length; index++) {
         const row = rows[index];
@@ -268,7 +284,7 @@ const validateSubjectData = async (rows) => {
 
         // Validate department if provided
         let cleanDept = (department || 'CS').trim();
-        if (department) {
+        if (cleanDept && validDepts && validDepts.length > 0) {
             const deptValidation = await validateDepartmentCode(department, validDepts);
             if (!deptValidation.valid) {
                 if (deptValidation.suggestion) {
@@ -303,33 +319,76 @@ const validateLectureData = (rows) => {
         const rowNum = index + 2;
         const rowErrors = [];
 
+        // Check for Custom/External Format "Free" or "-" slots
+        if (row.Status === 'Free' || row.Subject === '-') {
+            return; // Skip free periods entirely
+        }
+
         // For recurring schedules, day_of_week can replace date
         const hasDate = row.date || row.Date;
-        const hasDayOfWeek = row.day_of_week || row.DayOfWeek || row['Day of Week'];
+        const hasDayOfWeek = row.day_of_week || row.DayOfWeek || row['Day of Week'] || row.Day;
 
         if (!hasDate && !hasDayOfWeek) {
             rowErrors.push('Either Date or Day of Week is required');
         }
-        if (!row.start_time && !row.StartTime) rowErrors.push('Start Time is required');
-        if (!row.end_time && !row.EndTime) rowErrors.push('End Time is required');
-        if (!row.subject && !row.Subject) rowErrors.push('Subject is required');
-        if (!row.teacher_email && !row.TeacherEmail) rowErrors.push('Teacher Email is required');
-        if (!row.class_year && !row.ClassYear) rowErrors.push('Class Year is required');
+
+        let startTime = row.start_time || row.StartTime;
+        let endTime = row.end_time || row.EndTime;
+
+        // Parse external Slot format (e.g. "Period 5 (1:45-2:45)")
+        if (row.Slot && (!startTime || !endTime)) {
+            const timeMatch = row.Slot.match(/\((.*?)-(.*?)\)/) || row.Slot.match(/(.*?)-(.*)/);
+            if (timeMatch && timeMatch.length >= 3) {
+                const to24h = (timeStr) => {
+                    if (!timeStr) return '';
+                    let [h, m] = timeStr.replace(/[^0-9:]/g, '').split(':');
+                    if (!h || !m) return timeStr;
+                    let hour = parseInt(h);
+                    if (hour <= 7 && hour > 0) hour += 12; // Formats like 1:45 PM
+                    return `${hour.toString().padStart(2, '0')}:${m.padStart(2, '0')}`;
+                };
+                startTime = to24h(timeMatch[1]);
+                endTime = to24h(timeMatch[2]);
+            }
+        }
+
+        if (!startTime) rowErrors.push('Start Time is required');
+        if (!endTime) rowErrors.push('End Time is required');
+
+        const subject = row.subject || row.Subject;
+        if (!subject) rowErrors.push('Subject is required');
+
+        const teacherEmail = row.teacher_email || row.TeacherEmail || row.Email;
+        if (!teacherEmail) rowErrors.push('Teacher Email is required');
+
+        let classYear = row.class_year || row.ClassYear;
+        let division = row.division || row.Division || 'A';
+
+        // Parse external Class Info (e.g. "SY-A")
+        if (row['Class Info'] && !classYear) {
+            const classInfo = row['Class Info'].toString().trim();
+            if (classInfo !== '-') {
+                const parts = classInfo.split('-');
+                if (parts.length >= 1) classYear = parts[0].trim();
+                if (parts.length >= 2) division = parts[1].trim();
+            }
+        }
+
+        if (!classYear) rowErrors.push('Class Year is required');
 
         if (rowErrors.length > 0) {
             console.log(`❌ Row ${rowNum} validation failed:`, rowErrors);
-            console.log('Row data:', JSON.stringify(row, null, 2));
             errors.push({ row: rowNum, errors: rowErrors, data: row });
         } else {
             validRows.push({
-                date: row.date || row.Date || null,
-                day_of_week: row.day_of_week || row.DayOfWeek || row['Day of Week'] || null,
-                start_time: row.start_time || row.StartTime,
-                end_time: row.end_time || row.EndTime,
-                subject: (row.subject || row.Subject).trim(),
-                teacher_email: (row.teacher_email || row.TeacherEmail).trim(),
-                class_year: (row.class_year || row.ClassYear).trim(),
-                division: (row.division || row.Division || 'A').trim(),
+                date: hasDate || null,
+                day_of_week: hasDayOfWeek || null,
+                start_time: startTime,
+                end_time: endTime,
+                subject: subject.trim(),
+                teacher_email: teacherEmail.trim(),
+                class_year: classYear.trim(),
+                division: division.trim(),
                 room: (row.room || row.Room || 'TBA').toString()
             });
         }

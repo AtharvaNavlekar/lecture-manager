@@ -15,7 +15,8 @@ import {
     Door,
     Warning,
     CheckCircle,
-    Repeat
+    Repeat,
+    GridFour
 } from '@phosphor-icons/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -35,7 +36,8 @@ const LectureFormModal = ({ show, onClose, onSuccess, lecture = null, mode = 'cr
         end_time: selectedSlot?.end_time || '10:00',
         recurring: false,
         recurring_type: 'weekly',
-        recurring_count: 10
+        recurring_count: 10,
+        division: 'A'
     });
 
     const [teachers, setTeachers] = useState([]);
@@ -63,7 +65,8 @@ const LectureFormModal = ({ show, onClose, onSuccess, lecture = null, mode = 'cr
                     end_time: lecture.end_time,
                     recurring: false,
                     recurring_type: 'weekly',
-                    recurring_count: 10
+                    recurring_count: 10,
+                    division: lecture.division || 'A'
                 });
             } else if (lecture && isReschedule) {
                 setFormData({
@@ -137,7 +140,8 @@ const LectureFormModal = ({ show, onClose, onSuccess, lecture = null, mode = 'cr
                     room: formData.room,
                     date: formData.date,
                     start_time: formData.start_time,
-                    end_time: formData.end_time
+                    end_time: formData.end_time,
+                    division: formData.division
                 });
             } else {
                 // Create
@@ -312,6 +316,27 @@ const LectureFormModal = ({ show, onClose, onSuccess, lecture = null, mode = 'cr
                                             onChange={(e) => setFormData({ ...formData, room: e.target.value })}
                                             className="w-full bg-slate-900 border border-white/10 rounded-lg p-3 text-sm text-white focus:border-indigo-500 outline-none transition-all"
                                             placeholder="e.g. Lab-1"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <CustomDropdown
+                                            label="Division"
+                                            value={formData.division}
+                                            onChange={(val) => setFormData({ ...formData, division: val })}
+                                            options={(divisions && divisions.length > 0) ? divisions.map(d => ({
+                                                value: d.code,
+                                                label: `Division ${d.code}`
+                                            })) : [
+                                                { value: 'A', label: 'Division A' },
+                                                { value: 'B', label: 'Division B' },
+                                                { value: 'C', label: 'Division C' },
+                                                { value: 'D', label: 'Division D' }
+                                            ]}
+                                            placeholder="Select Division"
+                                            icon={<GridFour size={14} />}
                                         />
                                     </div>
                                 </div>

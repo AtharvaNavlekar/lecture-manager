@@ -18,7 +18,7 @@ http://localhost:5173
 
 ---
 
-## 📖 Complete Setup Guide (For All Users)
+## 📖 Complete Setup Guide (For All Users
 
 This guide is written step-by-step for anyone—including non-technical users—who wants to set up Lecture Manager for their college from scratch.
 

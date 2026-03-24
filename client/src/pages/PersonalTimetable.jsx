@@ -71,7 +71,7 @@ const PersonalTimetable = () => {
             // Fallback: try alternative endpoint
             try {
                 const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-                const fetchDay = (day) => api.get(`/schedule?date=${day}`);
+                const fetchDay = (day) => api.get(`/lectures/schedule?date=${day}`);
                 const dayResults = await Promise.all(weekDays.map(day => fetchDay(day)));
                 const allLectures = dayResults.map(r => r.data.success ? r.data.schedule : []).flat();
 

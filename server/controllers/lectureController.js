@@ -147,9 +147,11 @@ const updateLecture = (req, res) => {
 };
 
 const getRoster = (req, res) => {
+    console.log(`[getRoster] Starting fetch for lectureId=${req.params.lectureId}, classYear=${req.params.classYear}`);
     const { lectureId, classYear } = req.params;
     const requesterId = req.userId;
     const requesterRole = req.userRole;
+    console.log(`[getRoster] Requester ID=${requesterId}, Role=${requesterRole}`);
 
     // 0. Get Lecture + Teacher Department in ONE query using JOIN
     db.get(`
@@ -158,6 +160,7 @@ const getRoster = (req, res) => {
         JOIN teachers t ON l.scheduled_teacher_id = t.id
         WHERE l.id = ?
     `, [lectureId], (errL, lecture) => {
+        console.log(`[getRoster] db.get lecture result: errL=${errL}, lectureFound=${!!lecture}`);
         if (!lecture) return res.status(404).json([]);
 
         // SECURITY: Verify requester is authorized to view this roster
@@ -176,9 +179,9 @@ const getRoster = (req, res) => {
 
         // Add division filter if lecture has division specified
         if (lecture.division) {
-            studentQuery += " AND (division = ? OR name LIKE ?)";
+            // Strictly filter to only this division's 60 students
+            studentQuery += " AND division = ?";
             studentParams.push(lecture.division);
-            studentParams.push(`%${classYear}-${lecture.division}%`);
         }
 
         // 2. Fetch students and attendance records in parallel
@@ -201,7 +204,7 @@ const getRoster = (req, res) => {
                 db.all(`
                     SELECT * FROM attendance_records 
                     WHERE lecture_id = ? 
-                    AND date(created_at) >= ?
+                    AND date(marked_at) >= ?
                 `, [lectureId, weekStartISO], (err, records) => {
                     if (err) reject(err);
                     else resolve(records || []);
@@ -277,9 +280,8 @@ const markAll = (req, res) => {
         let studentParams = [class_year, lecture.teacher_department];
 
         if (lecture.division) {
-            studentQuery += " AND (division = ? OR name LIKE ?)";
+            studentQuery += " AND division = ?";
             studentParams.push(lecture.division);
-            studentParams.push(`%${class_year}-${lecture.division}%`);
         }
 
         db.all(studentQuery, studentParams, (err, students) => {
@@ -374,35 +376,37 @@ const proceedWithSchedule = (req, res, dayOrDate, deptFilter) => {
         startOfWeek.setHours(0, 0, 0, 0);
         const weekStartISO = startOfWeek.toISOString().split('T')[0];
 
-        // For each lecture, check if attendance was marked THIS WEEK
-        const lectureStatusPromises = rows.map(lecture => {
-            return new Promise((resolve) => {
-                db.get(`
-                    SELECT COUNT(*) as count 
-                    FROM attendance_records 
-                    WHERE lecture_id = ? 
-                    AND date(created_at) >= ?
-                `, [lecture.id, weekStartISO], (err, row) => {
-                    if (err) {
-                        // On error, fallback to database status
-                        resolve(lecture);
-                    } else {
-                        // Override status based on this week's attendance
-                        resolve({
-                            ...lecture,
-                            status: (row && row.count > 0) ? 'completed' : 'scheduled'
-                        });
-                    }
-                });
-            });
-        });
+        if (rows.length === 0) {
+            return res.json({ success: true, schedule: [] });
+        }
 
-        // Wait for all status checks to complete
-        Promise.all(lectureStatusPromises).then(lectures => {
+        // E11 FIX: Single query to get attendance counts for ALL lectures this week
+        // instead of N separate queries (one per lecture)
+        const lectureIds = rows.map(l => l.id);
+        const placeholders = lectureIds.map(() => '?').join(',');
+
+        db.all(`
+            SELECT lecture_id, COUNT(*) as count 
+            FROM attendance_records 
+            WHERE lecture_id IN (${placeholders}) 
+            AND date(marked_at) >= ?
+            GROUP BY lecture_id
+        `, [...lectureIds, weekStartISO], (attErr, attRows) => {
+            // Build a lookup map: lecture_id -> count
+            const attendanceMap = {};
+            if (!attErr && attRows) {
+                attRows.forEach(r => { attendanceMap[r.lecture_id] = r.count; });
+            }
+
+            // Merge attendance status into lectures
+            const lectures = rows.map(lecture => ({
+                ...lecture,
+                status: (attendanceMap[lecture.id] && attendanceMap[lecture.id] > 0)
+                    ? 'completed'
+                    : 'scheduled'
+            }));
+
             res.json({ success: true, schedule: lectures });
-        }).catch(err => {
-            // Fallback to original data if promise chain fails
-            res.json({ success: true, schedule: rows });
         });
     });
 };
@@ -433,7 +437,7 @@ const markNotificationRead = (req, res) => {
 
 // Create new lecture
 const createLecture = (req, res) => {
-    const { teacher_id, subject, class_year, room, date, start_time, end_time, recurring } = req.body;
+    const { teacher_id, subject, class_year, room, date, start_time, end_time, recurring, division } = req.body;
     const requester = req.userId;
 
     // Validation
@@ -493,12 +497,12 @@ const createLecture = (req, res) => {
             // Bulk insert
             const stmt = db.prepare(`
                 INSERT INTO lectures 
-                (scheduled_teacher_id, subject, class_year, room, date, start_time, end_time, status, total_students)
-                VALUES (?, ?, ?, ?, ?, ?, ?, 'scheduled', 60)
+                (scheduled_teacher_id, subject, class_year, room, date, start_time, end_time, status, total_students, division)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 'scheduled', 60, ?)
             `);
 
             lectures.forEach(lec => {
-                stmt.run(lec.teacher_id, lec.subject, lec.class_year, lec.room, lec.date, lec.start_time, lec.end_time);
+                stmt.run(lec.teacher_id, lec.subject, lec.class_year, lec.room, lec.date, lec.start_time, lec.end_time, division);
             });
 
             stmt.finalize(() => {
@@ -513,9 +517,9 @@ const createLecture = (req, res) => {
             // Single lecture
             db.run(`
                 INSERT INTO lectures 
-                (scheduled_teacher_id, subject, class_year, room, date, start_time, end_time, status, total_students)
-                VALUES (?, ?, ?, ?, ?, ?, ?, 'scheduled', 60)
-            `, [teacher_id, subject, class_year, room, date, start_time, end_time], function (err) {
+                (scheduled_teacher_id, subject, class_year, room, date, start_time, end_time, status, total_students, division)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 'scheduled', 60, ?)
+            `, [teacher_id, subject, class_year, room, date, start_time, end_time, division], function (err) {
                 if (err) {
                     console.error('Failed to create lecture:', err);
                     return res.status(500).json({ success: false, message: err.message });
@@ -535,7 +539,7 @@ const createLecture = (req, res) => {
 // Edit lecture (full edit)
 const editLecture = (req, res) => {
     const { id } = req.params;
-    const { teacher_id, subject, class_year, room, date, start_time, end_time } = req.body;
+    const { teacher_id, subject, class_year, room, date, start_time, end_time, division } = req.body;
 
     // Check if lecture has attendance
     db.get('SELECT COUNT(*) as count FROM attendance_records WHERE lecture_id = ?', [id], (err, result) => {
@@ -545,9 +549,9 @@ const editLecture = (req, res) => {
         db.run(`
             UPDATE lectures
             SET scheduled_teacher_id = ?, subject = ?, class_year = ?, 
-                room = ?, date = ?, start_time = ?, end_time = ?
+                room = ?, date = ?, start_time = ?, end_time = ?, division = ?
             WHERE id = ?
-        `, [teacher_id, subject, class_year, room, date, start_time, end_time, id], function (err) {
+        `, [teacher_id, subject, class_year, room, date, start_time, end_time, division, id], function (err) {
             if (err) {
                 return res.status(500).json({ success: false, message: err.message });
             }

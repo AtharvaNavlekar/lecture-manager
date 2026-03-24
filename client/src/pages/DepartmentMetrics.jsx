@@ -42,7 +42,7 @@ const DepartmentMetrics = () => {
         try {
             const [teachersRes, lecturesRes, deptsRes] = await Promise.all([
                 api.get('/teachers'),
-                api.get('/schedule'),
+                api.get('/lectures/schedule'),
                 api.get('/config/departments')
             ]);
 

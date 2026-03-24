@@ -12,7 +12,8 @@ import {
     ArrowLeft,
     Users,
     Funnel,
-    Star
+    Star,
+    Sparkle
 } from '@phosphor-icons/react';
 import toast from 'react-hot-toast';
 import CustomSelect from '../components/ui/CustomSelect';
@@ -68,15 +69,9 @@ const Attendance = () => {
             setLoading(true);
             console.log("Attendance: Fetching data from API...");
 
-            const [rosterRes, aiRes] = await Promise.all([
-                api.get(`/attendance/roster/${id}/${classYear}`),
-                api.get('/ai/forecast').catch(err => {
-                    console.warn("Attendance: AI forecast failed", err);
-                    return { data: { predictions: [] } };
-                })
-            ]);
-
-            console.log("Attendance: Data fetched", { rosterSize: rosterRes.data?.roster?.length || rosterRes.data?.length });
+            // Core data fetch - do NOT block on AI
+            const rosterRes = await api.get(`/lectures/attendance/roster/${id}/${classYear}`);
+            console.log("Attendance: Core data fetched");
 
             // Handle new response format { roster, lecture }
             const students = rosterRes.data.roster || rosterRes.data;
@@ -86,17 +81,25 @@ const Attendance = () => {
                 ...s,
                 status: s.status || 'pending'
             }));
+
+            // BUG FIX: Actually set the roster and lecture details state
             setRoster(normalized);
             setLectureDetails(details);
 
-            // Map predictions by student ID for O(1) lookup
-            const predMap = {};
-            if (aiRes.data?.predictions) {
-                aiRes.data.predictions.forEach(p => {
-                    predMap[p.student.id] = p.risk;
+            // Fetch AI forecast asynchronously in the background so it doesn't block the UI
+            api.get('/ai/forecast')
+                .then(aiRes => {
+                    if (aiRes.data?.predictions) {
+                        const predMap = {};
+                        aiRes.data.predictions.forEach(p => {
+                            predMap[p.student.id] = p.risk;
+                        });
+                        setPredictions(predMap);
+                    }
+                })
+                .catch(err => {
+                    console.warn("Attendance: AI forecast failed or timed out", err);
                 });
-            }
-            setPredictions(predMap);
 
             // Fetch Syllabus if subject is known and user is available
             if (details.subject && user?.department) {
@@ -119,12 +122,22 @@ const Attendance = () => {
         }
     };
 
+    const updateLectureTopic = async (title, topicId) => {
+        setLectureDetails(prev => ({ ...prev, topic_covered: title, syllabus_topic_id: topicId }));
+        try {
+            await api.post('/lectures/update-details', { id, topic_covered: title, syllabus_topic_id: topicId });
+        } catch (e) {
+            logger.error("Failed to update lecture topic", e);
+            toast.error("Failed to save topic");
+        }
+    };
+
     const markStudent = async (studentId, status) => {
         // Optimistic Update with sound effect logic (optional but "smooth")
         setRoster(prev => prev.map(s => s.id === studentId ? { ...s, status } : s));
 
         try {
-            await api.post('/attendance/mark', {
+            await api.post('/lectures/attendance/mark', {
                 lecture_id: id,
                 student_id: studentId,
                 status,
@@ -177,7 +190,7 @@ const Attendance = () => {
         setRoster(updated);
 
         try {
-            await api.post('/attendance/mark-all', { lecture_id: id, class_year: classYear, user_id: user.id });
+            await api.post('/lectures/attendance/mark-all', { lecture_id: id, class_year: classYear, user_id: user.id });
         } catch (e) {
             logger.error(e);
             toast.error("Failed to mark all present");
@@ -372,7 +385,10 @@ const StudentCard = ({ student, risk, onMark }) => {
                     <div className="group/risk relative cursor-help">
                         <Star size={24} weight="fill" className="text-violet-400 animate-pulse drop-shadow-[0_0_8px_rgba(167,139,250,0.5)]" />
                         <div className="absolute right-0 top-8 w-48 bg-violet-950/90 backdrop-blur-md border border-violet-500/30 p-3 rounded-xl text-[10px] text-violet-200 opacity-0 group-hover/risk:opacity-100 transition-all duration-200 pointer-events-none shadow-xl transform origin-top-right scale-95 group-hover/risk:scale-100">
-                            <strong className="text-violet-100 block mb-2 text-xs">✨ AI Insight</strong>
+                            <strong className="text-violet-100 mb-2 text-xs flex items-center gap-1.5">
+                                <Sparkle size={14} weight="fill" className="text-indigo-400" />
+                                AI Insight
+                            </strong>
                             <div className="flex items-center gap-2 mb-2">
                                 <div className="h-1.5 flex-1 bg-slate-900 rounded-full overflow-hidden border border-white/5">
                                     <div className="h-full bg-gradient-to-r from-violet-500 to-fuchsia-500" style={{ width: `${risk.riskScore}%` }}></div>

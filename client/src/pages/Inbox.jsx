@@ -53,7 +53,7 @@ const Inbox = () => {
 
     const markAsRead = async (id) => {
         try {
-            await api.post('/notifications/read', { id });
+            await api.post('/notifications/mark-read', { notificationIds: [id] });
             // Optimistic update
             setNotifications(prev => prev.map(n =>
                 n.id === id ? { ...n, status: 'read' } : n
@@ -66,7 +66,7 @@ const Inbox = () => {
 
     const markAllRead = async () => {
         try {
-            await api.post('/notifications/read', {});
+            await api.post('/notifications/mark-all-read', {});
             setNotifications(prev => prev.map(n => ({ ...n, status: 'read' })));
             fetchUnreadCount();
         } catch (e) {

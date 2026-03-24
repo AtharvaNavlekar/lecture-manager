@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const router = express.Router();
 const { db } = require('../config/db');
 const { promisify } = require('util');
@@ -97,20 +97,17 @@ router.post('/', async (req, res) => {
         const end = new Date(end_date);
         const total_days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
 
-        // Default leave_type_id to 1 (casual leave)
-        const leave_type_id = 1;
-
         // HOD leave requests should be marked differently for routing to Principal
         const hodFlag = is_hod ? 1 : 0;
         const delegation = delegate_responsibilities || null;
 
         const result = await dbRun(`
             INSERT INTO leave_requests (
-                teacher_id, leave_type_id, start_date, end_date, 
-                total_days, reason, affected_lectures, notes, status,
+                teacher_id, start_date, end_date, 
+                reason, affected_lectures, notes, status, leave_type,
                 is_hod_request, delegate_to
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)
-        `, [teacher_id, leave_type_id, start_date, end_date, total_days, reason, JSON.stringify(affected_lectures || []), notes, hodFlag, delegation]);
+            ) VALUES (?, ?, ?, ?, ?, ?, 'pending', 'casual', ?, ?)
+        `, [teacher_id, start_date, end_date, reason, JSON.stringify(affected_lectures || []), notes, hodFlag, delegation]);
 
         // Logic to notify HOD (or Admin if requester is HOD)
         try {
@@ -440,17 +437,13 @@ router.post('/substitute/request', async (req, res) => {
 
         // 2. Insert Leave Request linked to this lecture
         const notes = `Ad-hoc substitute request: ${subject} for ${class_year} at ${time_slot}`;
-        const leave_type_id = 1; // Default to casual leave type
-        const total_days = 1; // Single day request
-        const affected_lectures = JSON.stringify([lecture_id]); // Link the lecture!
-
         const result = await dbRun(`
             INSERT INTO leave_requests (
-                teacher_id, leave_type_id, start_date, end_date, total_days, 
-                reason, notes, status, affected_lectures, submitted_at
+                teacher_id, start_date, end_date, 
+                reason, notes, status, leave_type, affected_lectures, submitted_at
             ) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, 'approved', ?, CURRENT_TIMESTAMP)
-        `, [teacher_id, leave_type_id, date, date, total_days, reason, notes, affected_lectures]);
+            VALUES (?, ?, ?, ?, ?, 'approved', 'casual', ?, CURRENT_TIMESTAMP)
+        `, [teacher_id, date, date, reason, notes, affected_lectures]);
 
         res.json({
             success: true,

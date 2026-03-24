@@ -12,7 +12,7 @@ const getHodAnalytics = (req, res) => {
 
     console.log(`[Analytics] Endpoint hit - userId: ${teacherId}, userRole: ${userRole}`);
 
-    if (!teacherId) {
+    if (teacherId === undefined || teacherId === null) {
         console.error('[Analytics] ERROR: req.userId is undefined! Auth middleware may have failed.');
         return res.status(401).json({ success: false, error: 'User ID not found. Please login again.' });
     }
@@ -173,6 +173,7 @@ const getAttendanceTrends = (req, res) => {
         FROM lectures 
         WHERE status = 'completed'
         GROUP BY class_year
+        ORDER BY (CAST(SUM(attendance_count) AS FLOAT) / NULLIF(SUM(total_students), 0)) DESC
     `;
 
     // 3. By Subject

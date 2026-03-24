@@ -4,7 +4,20 @@ import React, { useState, useEffect } from 'react';
 import CustomDropdown from '../components/CustomDropdown';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
-import { Calendar, User, Activity, Filter, Search, ChevronDown } from 'lucide-react';
+import { 
+    Calendar, 
+    User, 
+    MagnifyingGlass as Search, 
+    CaretDown as ChevronDown,
+    ChalkboardTeacher,
+    Student,
+    Books,
+    AirplaneTilt as Airplane,
+    NotePencil,
+    Folder,
+    Gear
+} from '@phosphor-icons/react';
+import { Activity, Filter } from 'lucide-react';
 import api from '../utils/api';
 
 import CustomDatePicker from '../components/ui/CustomDatePicker';
@@ -56,13 +69,13 @@ const AuditLogs = () => {
     };
 
     const resourceIcons = {
-        teachers: '👨‍🏫',
-        students: '🎓',
-        lectures: '📚',
-        leave_requests: '🏖️',
-        assignments: '📝',
-        resources: '📁',
-        settings: '⚙️'
+        teachers: <ChalkboardTeacher className="text-blue-400" />,
+        students: <Student className="text-emerald-400" />,
+        lectures: <Books className="text-indigo-400" />,
+        leave_requests: <Airplane className="text-rose-400" />,
+        assignments: <NotePencil className="text-amber-400" />,
+        resources: <Folder className="text-blue-400" />,
+        settings: <Gear className="text-slate-400" />
     };
 
     const clearFilters = () => {
@@ -274,7 +287,7 @@ const AuditLogs = () => {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
                                             <div className="flex items-center gap-2">
-                                                <span>{resourceIcons[log.resource] || '📄'}</span>
+                                                {resourceIcons[log.resource] || <Activity />}
                                                 <span className="capitalize">{log.resource?.replace('_', ' ')}</span>
                                                 {log.resource_id && (
                                                     <span className="text-slate-500">#{log.resource_id}</span>

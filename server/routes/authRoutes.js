@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { z } = require('zod');
-const { login, register, logout, me } = require('../controllers/authController');
+const { login, register, logout, me, changePassword } = require('../controllers/authController');
 const { checkRateLimit } = require('../middleware/rateLimitMiddleware');
 const { validate } = require('../middleware/validate');
 const { verifyToken } = require('../middleware/authMiddleware');
@@ -16,5 +16,6 @@ router.post('/login', checkRateLimit, validate(loginSchema), login);
 router.post('/register', register);
 router.post('/logout', logout);
 router.get('/me', verifyToken, me);
+router.put('/change-password', verifyToken, changePassword);
 
 module.exports = router;

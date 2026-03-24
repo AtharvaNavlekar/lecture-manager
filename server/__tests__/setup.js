@@ -25,7 +25,7 @@ global.testUtils = {
     },
 
     createTestUser: async (db) => {
-        const bcrypt = require('bcrypt');
+        const bcrypt = require('bcryptjs');
         const hashedPassword = await bcrypt.hash('Test@123', 10);
 
         const result = await new Promise((resolve, reject) => {

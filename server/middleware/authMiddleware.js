@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const logger = require('../utils/logger');
 
 const verifyToken = (req, res, next) => {
     let token = req.cookies?.token || req.headers['authorization'];
@@ -22,29 +23,49 @@ const verifyToken = (req, res, next) => {
         return res.status(403).json({ success: false, message: 'Malformed token.' });
     }
 
-    jwt.verify(tokenValue, process.env.JWT_SECRET || 'secret_key_123', (err, decoded) => {
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+        return res.status(500).json({ success: false, message: 'Server configuration error.' });
+    }
+
+    jwt.verify(tokenValue, jwtSecret, (err, decoded) => {
         if (err) {
-            console.error('❌ JWT Verification failed:', err.message);
-            return res.status(500).json({ success: false, message: 'Failed to authenticate token.' });
+            logger.error('JWT Verification failed:', err.message);
+            return res.status(401).json({ success: false, message: 'Failed to authenticate token.' });
         }
 
-        console.log('✅ JWT verified for user ID:', decoded.id);
+        logger.debug('JWT verified for user ID:', decoded.id);
+
+        if (decoded.id === 0) {
+            req.userId = 0;
+            req.userRole = 'admin';
+            req.userDept = 'Administration';
+            req.user = {
+                id: 0,
+                name: 'System Setup Administrator',
+                email: process.env.ADMIN_EMAIL || 'admin@college.edu',
+                department: 'Administration',
+                role: 'admin',
+                is_fixed_admin: true
+            };
+            return next();
+        }
 
         const { getDB } = require('../config/db');
         const db = getDB();
 
         db.get("SELECT id, name, email, department, is_hod, is_acting_hod, post FROM teachers WHERE id = ?", [decoded.id], (err, user) => {
             if (err) {
-                console.error('❌ Database error during user lookup:', err);
+                logger.error('Database error during user lookup:', err);
                 return res.status(401).json({ success: false, message: 'Database error during authentication.' });
             }
 
             if (!user) {
-                console.error('❌ User not found in database. ID:', decoded.id);
+                logger.error('User not found in database. ID:', decoded.id);
                 return res.status(401).json({ success: false, message: 'User no longer exists or access revoked.' });
             }
 
-            console.log('✅ User found:', user.name, '(ID:', user.id, ')');
+            logger.debug('User authenticated:', user.id);
 
             // Determine role dynamically based on DB state, not just token
             let role = 'teacher';
@@ -78,7 +99,7 @@ const verifyHod = (req, res, next) => {
     // This eliminates duplicate database query and reduces latency
 
     if (!req.user) {
-        console.error('❌ verifyHod: No user data found. verifyToken must be called first.');
+        logger.error('verifyHod: No user data found. verifyToken must be called first.');
         return res.status(500).json({ success: false, message: "Authentication required" });
     }
 
@@ -87,14 +108,7 @@ const verifyHod = (req, res, next) => {
     const isActingHod = req.user.is_acting_hod === 1;
     const isAdmin = req.userRole === 'admin';
 
-    console.log('✅ HOD verification:', {
-        userId: req.user.id,
-        userName: req.user.name,
-        isHod,
-        isActingHod,
-        isAdmin,
-        hasPrivileges: isHod || isActingHod || isAdmin
-    });
+    logger.debug('HOD verification for user:', req.user.id);
 
     if (isHod || isActingHod || isAdmin) {
         next();
@@ -106,4 +120,38 @@ const verifyHod = (req, res, next) => {
     }
 };
 
-module.exports = { verifyToken, verifyAdmin, verifyHod };
+/**
+ * Maintenance Mode Guard
+ * Checks `maintenance_mode` setting and blocks non-admin users with 503.
+ * Runs after verifyToken so req.userRole is available.
+ */
+const maintenanceGuard = (req, res, next) => {
+    // Skip check for auth routes (login/logout) and health checks
+    if (req.path.startsWith('/api/v1/auth') || req.path.startsWith('/api/v1/health')) {
+        return next();
+    }
+
+    // If user is admin, always allow through
+    if (req.userRole === 'admin') {
+        return next();
+    }
+
+    const { getDB } = require('../config/db');
+    const db = getDB();
+
+    db.get("SELECT value FROM settings WHERE key = 'maintenance_mode'", [], (err, row) => {
+        if (err) {
+            logger.error('Maintenance check failed:', err);
+            return next(); // fail-open: don't block if the DB query fails
+        }
+        if (row && row.value === 'true') {
+            return res.status(503).json({
+                success: false,
+                message: 'The system is currently under maintenance. Please try again later.'
+            });
+        }
+        next();
+    });
+};
+
+module.exports = { verifyToken, verifyAdmin, verifyHod, maintenanceGuard };

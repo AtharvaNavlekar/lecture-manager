@@ -599,18 +599,55 @@ const TemplatesPanel = () => {
         }
     };
 
-    const applyTemplate = async (id, merge = false) => {
-        if (!confirm(`Apply this template? ${merge ? 'Configurations will be merged.' : 'Existing configurations will be replaced.'}`)) return;
-
-        try {
-            const res = await api.post(`/config/templates/${id}/apply`, { merge });
-            if (res.data.success) {
-                toast.success('Template applied successfully!');
-                setTimeout(() => window.location.reload(), 1500);
-            }
-        } catch (err) {
-            toast.error('Failed to apply template');
-        }
+    const applyTemplate = (id, merge = false) => {
+        toast.custom((t) => (
+            <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full backdrop-blur-2xl bg-slate-900/90 shadow-2xl rounded-2xl border border-white/10 pointer-events-auto flex flex-col p-5`}>
+                <div className="flex gap-4">
+                    <div className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${merge ? 'bg-blue-500/20 text-blue-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                        {merge ? <Download weight="duotone" size={20} /> : <ArrowsClockwise weight="duotone" size={20} />}
+                    </div>
+                    <div>
+                        <p className="text-white font-semibold">
+                            {merge ? 'Merge Template?' : 'Replace All Configurations?'}
+                        </p>
+                        <p className="mt-1 text-sm text-slate-400">
+                            {merge
+                                ? 'This will add new configurations. Existing data will not be touched unless there is an exact conflict.'
+                                : 'WARNING: This will obliterate all existing configurations and replace them with the template default. This action cannot be undone.'}
+                        </p>
+                    </div>
+                </div>
+                <div className="flex gap-3 mt-5">
+                    <button
+                        onClick={() => toast.dismiss(t.id)}
+                        className="flex-1 px-4 py-2 border border-white/10 text-slate-300 rounded-lg text-sm font-medium hover:bg-white/5 hover:text-white transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={async () => {
+                            toast.dismiss(t.id);
+                            const loadingToast = toast.loading('Applying template...');
+                            try {
+                                const res = await api.post(`/config/templates/${id}/apply`, { merge });
+                                if (res.data.success) {
+                                    toast.success('Template applied successfully!', { id: loadingToast });
+                                    setTimeout(() => window.location.reload(), 1500);
+                                }
+                            } catch (err) {
+                                toast.error('Failed to apply template', { id: loadingToast });
+                            }
+                        }}
+                        className={`flex-1 px-4 py-2 rounded-lg text-white text-sm font-medium shadow-lg transition-transform hover:scale-[1.02] active:scale-95 ${merge
+                                ? 'bg-gradient-to-r from-blue-600 to-indigo-600'
+                                : 'bg-gradient-to-r from-emerald-600 to-teal-600'
+                            }`}
+                    >
+                        Confirm
+                    </button>
+                </div>
+            </div>
+        ), { duration: Infinity });
     };
 
     const TEMPLATE_GRADIENTS = [

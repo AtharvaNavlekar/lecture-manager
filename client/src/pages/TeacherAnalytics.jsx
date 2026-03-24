@@ -43,7 +43,7 @@ const TeacherAnalytics = () => {
     const fetchTeacherAnalytics = async () => {
         try {
             const [lecturesRes, assignmentsRes, evaluationsRes, teachersRes] = await Promise.all([
-                api.get('/schedule'),
+                api.get('/lectures/schedule'),
                 api.get('/assignments'),
                 api.get(`/evaluations/teacher/${user.id}`),
                 api.get('/teachers')

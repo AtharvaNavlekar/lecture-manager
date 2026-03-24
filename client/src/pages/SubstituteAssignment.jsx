@@ -15,7 +15,10 @@ import {
     Plus,
     ShieldWarning,
     X,
-    CircleNotch
+    CircleNotch,
+    ChartBar,
+    Check,
+    Warning
 } from '@phosphor-icons/react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
@@ -204,9 +207,9 @@ const SubstituteAssignment = () => {
 
     const getWorkloadBadge = (teacherId) => {
         const count = substituteWorkload[teacherId] || 0;
-        if (count >= 5) return { text: `${count} this month`, color: 'bg-rose-500/20 text-rose-400', icon: '⚠️' };
-        if (count >= 3) return { text: `${count} this month`, color: 'bg-amber-500/20 text-amber-400', icon: '📊' };
-        return { text: count > 0 ? `${count} this month` : 'Available', color: 'bg-emerald-500/20 text-emerald-400', icon: '✓' };
+        if (count >= 5) return { text: `${count} this month`, color: 'bg-rose-500/20 text-rose-400', icon: <Warning size={12} weight="fill" /> };
+        if (count >= 3) return { text: `${count} this month`, color: 'bg-amber-500/20 text-amber-400', icon: <ChartBar size={12} weight="fill" /> };
+        return { text: count > 0 ? `${count} this month` : 'Available', color: 'bg-emerald-500/20 text-emerald-400', icon: <Check size={12} weight="bold" /> };
     };
 
     const handleSubmitRequest = async (e) => {
@@ -636,7 +639,7 @@ const SubstituteAssignment = () => {
                                                 </button>
                                             </div>
                                             <div className="flex items-center justify-between mt-2">
-                                                <span className={`text-xs px-2 py-1 rounded font-bold ${workloadBadge.color}`}>
+                                                <span className={`text-xs px-2 py-1 rounded font-bold flex items-center gap-1.5 ${workloadBadge.color}`}>
                                                     {workloadBadge.icon} {workloadBadge.text}
                                                 </span>
                                             </div>

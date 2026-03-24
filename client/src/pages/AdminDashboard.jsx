@@ -44,8 +44,8 @@ const AdminDashboard = () => {
         try {
             // Use allSettled to prevent one failure from breaking the entire dashboard
             const results = await Promise.allSettled([
-                api.get('/teachers'),
-                api.get('/students'),
+                api.get('/teachers?limit=2000'),
+                api.get('/students?limit=5000'),
                 api.get('/admin/audit-logs'),
                 api.get('/config/departments')
             ]);

@@ -1,6 +1,6 @@
 const { db } = require('../config/db');
 const dbAsync = require('../utils/dbAsync');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const { parseExcel, validateTeacherData, generateTemplate } = require('../utils/excelParser');
 const { exportTeachersCSV } = require('../utils/csvExporter');
 
@@ -187,9 +187,15 @@ const importTeachers = async (req, res) => {
         // Import valid rows
         let imported = 0;
         const stmt = db.prepare(`
-            INSERT OR REPLACE INTO teachers 
+            INSERT INTO teachers 
             (name, email, department, post, is_hod, password) 
             VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT(email) DO UPDATE SET
+            name = excluded.name,
+            department = excluded.department,
+            post = excluded.post,
+            is_hod = excluded.is_hod,
+            password = excluded.password
         `);
 
         for (const teacher of validRows) {

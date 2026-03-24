@@ -32,27 +32,33 @@ import {
     GridFour,
     DotsThree,
     ListBullets,
-    XCircle
+    XCircle,
+    Paperclip
 } from '@phosphor-icons/react';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import CustomSelect from '../components/ui/CustomSelect';
+import FacultyCard from '../components/FacultyCard';
+import FacultyRow from '../components/FacultyRow';
 
 const FacultyDirectory = () => {
     const { user } = useContext(AuthContext);
     const [teachers, setTeachers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
+    const [departmentFilter, setDepartmentFilter] = useState('All');
     const [viewMode, setViewMode] = useState(() => localStorage.getItem('facultyViewMode') || 'grid');
     const [showModal, setShowModal] = useState(false);
 
-    // Dynamic config data
     const { data: departments, loading: deptLoading } = useDepartments();
     const { data: designations, loading: desigLoading } = useDesignations();
 
     // Defensive initialization - ensure these are always arrays
     const safeDepartments = Array.isArray(departments) ? departments : [];
     const safeDesignations = Array.isArray(designations) ? designations : [];
+
+    // Extract unique departments dynamically from uploaded data
+    const uniqueDepartments = [...new Set(teachers.map(t => t.department).filter(Boolean))].sort();
 
     // Import State
     const [showImport, setShowImport] = useState(false);
@@ -82,7 +88,7 @@ const FacultyDirectory = () => {
 
     const fetchTeachers = async () => {
         try {
-            const res = await api.get('/teachers');
+            const res = await api.get('/teachers?limit=2000');
             if (res.data.success) {
                 setTeachers(res.data.teachers);
             }
@@ -188,9 +194,9 @@ const FacultyDirectory = () => {
                 const res = await api.post('/teachers/import', data, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
-                results.push(`✅ ${file.name}: ${res.data.message}`);
+                results.push(`SUCCESS: ${file.name}: ${res.data.message}`);
             } catch (err) {
-                results.push(`❌ ${file.name}: ${err.response?.data?.message || err.message}`);
+                results.push(`ERROR: ${file.name}: ${err.response?.data?.message || err.message}`);
             }
         }
 
@@ -203,8 +209,13 @@ const FacultyDirectory = () => {
     // Filter Logic
     const filteredTeachers = teachers.filter(t => {
         if (user.role !== 'admin' && t.department !== user.department) return false;
-        return t.name.toLowerCase().includes(search.toLowerCase()) ||
+
+        const matchesSearch = t.name.toLowerCase().includes(search.toLowerCase()) ||
             t.department.toLowerCase().includes(search.toLowerCase());
+
+        const matchesDepartment = departmentFilter === 'All' || t.department.toUpperCase() === departmentFilter.toUpperCase();
+
+        return matchesSearch && matchesDepartment;
     });
 
     // Stats
@@ -326,6 +337,28 @@ const FacultyDirectory = () => {
                             onChange={(e) => setSearch(e.target.value)}
                             className="w-full bg-transparent border-none text-white focus:ring-0 placeholder-slate-500 py-3 px-3 text-sm outline-none"
                         />
+                    </div>
+                </div>
+
+                {/* Department Dropdown Filter */}
+                <div className="relative group min-w-[180px]">
+                    <div className="absolute -inset-0.5 bg-indigo-500/30 rounded-xl blur opacity-0 group-focus-within:opacity-100 transition duration-500"></div>
+                    <div className="relative flex items-center bg-[#0B1221] rounded-xl border border-white/10 overflow-hidden pr-4">
+                        <select
+                            value={departmentFilter}
+                            onChange={(e) => setDepartmentFilter(e.target.value)}
+                            className="w-full bg-transparent border-none text-white focus:ring-0 py-3 pl-4 pr-10 text-sm outline-none appearance-none cursor-pointer"
+                        >
+                            <option value="All" className="bg-slate-900">All Departments</option>
+                            {uniqueDepartments.map(dept => (
+                                <option key={dept} value={dept} className="bg-slate-900">
+                                    {dept}
+                                </option>
+                            ))}
+                        </select>
+                        <div className="absolute right-4 pointer-events-none text-slate-400">
+                            <Funnel size={18} />
+                        </div>
                     </div>
                 </div>
 
@@ -461,153 +494,7 @@ const FacultyDirectory = () => {
 };
 
 // Sub-Components
-const FacultyCard = ({ teacher, onEdit, onDelete, idx }) => (
-    <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: idx * 0.05 }}
-        className="glass p-6 rounded-3xl relative group hover:border-blue-500/30 transition-all card-tilt border border-white/5 bg-[#0f172a]/40"
-    >
-        {/* Badges */}
-        <div className="absolute top-4 right-4 flex gap-2">
-            {teacher.is_acting_hod === 1 && (
-                <div className="px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border bg-amber-500/10 text-amber-400 border-amber-500/20 animate-pulse">
-                    Acting HOD
-                </div>
-            )}
-            {teacher.is_hod === 1 && (
-                <div className="px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border bg-amber-500/20 text-amber-300 border-amber-500/30">
-                    HOD
-                </div>
-            )}
-        </div>
-
-        {/* User Info */}
-        <div className="flex items-center gap-4 mb-5 mt-1">
-            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-bold shadow-lg ${teacher.is_hod ? 'bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-amber-500/20'
-                : 'bg-gradient-to-br from-indigo-500 to-blue-600 text-white shadow-blue-500/20'
-                }`}>
-                {teacher.name.charAt(0)}
-            </div>
-            <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-lg text-white group-hover:text-blue-400 transition-colors truncate">
-                    {teacher.name}
-                </h3>
-                <div className="text-xs text-slate-400 font-medium truncate">{teacher.email}</div>
-            </div>
-        </div>
-
-        {/* Details Grid */}
-        <div className="grid grid-cols-2 gap-3 mb-5">
-            <div className="bg-[#0B1221] rounded-xl p-2.5 border border-white/5">
-                <div className="text-[10px] font-bold text-slate-500 uppercase mb-1">Department</div>
-                <div className="text-xs font-bold text-white flex items-center gap-1.5">
-                    <ChalkboardTeacher size={14} className="text-indigo-400" />
-                    {teacher.department}
-                </div>
-            </div>
-            <div className="bg-[#0B1221] rounded-xl p-2.5 border border-white/5">
-                <div className="text-[10px] font-bold text-slate-500 uppercase mb-1">Role</div>
-                <div className="text-xs font-bold text-white flex items-center gap-1.5">
-                    <GraduationCap size={14} className="text-purple-400" />
-                    <span className="truncate">{teacher.post}</span>
-                </div>
-            </div>
-        </div>
-
-        {/* Footer Actions */}
-        <div className="pt-4 border-t border-white/5 flex gap-2">
-            <button
-                onClick={onEdit}
-                className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors border border-white/5 py-2 text-xs font-bold"
-            >
-                <PencilSimple size={14} />
-                Edit Profile
-            </button>
-            <button
-                onClick={onDelete}
-                className="w-10 flex items-center justify-center rounded-xl bg-slate-800 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors border border-white/5 group/del"
-            >
-                <Trash size={14} className="group-hover/del:fill-rose-400 transition-colors" />
-            </button>
-        </div>
-    </motion.div>
-);
-
-const FacultyRow = ({ teacher, onEdit, onDelete, idx }) => (
-    <motion.tr
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: idx * 0.02 }}
-        className="group hover:bg-white/[0.02] transition-colors"
-    >
-        <td className="px-6 py-4">
-            <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shadow-lg ${teacher.is_hod ? 'bg-gradient-to-br from-amber-500 to-orange-600 text-white'
-                    : 'bg-gradient-to-br from-indigo-500 to-blue-600 text-white'
-                    }`}>
-                    {teacher.name.charAt(0)}
-                </div>
-                <div>
-                    <div className="font-bold text-white text-sm">{teacher.name}</div>
-                    <div className="text-xs text-slate-500">{teacher.email}</div>
-                </div>
-            </div>
-        </td>
-        <td className="px-6 py-4">
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                {teacher.department}
-            </span>
-        </td>
-        <td className="px-6 py-4">
-            <div className="flex flex-col items-start gap-1">
-                <div className="text-sm text-slate-300">{teacher.post}</div>
-                {(teacher.is_hod === 1 || teacher.is_acting_hod === 1) && (
-                    <div className="flex items-center gap-1 text-[10px] text-amber-400 font-bold uppercase tracking-wider">
-                        <Crown size={12} weight="fill" />
-                        {teacher.is_hod ? 'Head of Dept' : 'Acting HOD'}
-                    </div>
-                )}
-            </div>
-        </td>
-        <td className="px-6 py-4">
-            <div className="text-xs text-slate-400">
-                {teacher.contact_number ? (
-                    <div className="flex items-center gap-1.5">
-                        <Phone size={14} className="text-emerald-400" />
-                        {teacher.contact_number}
-                    </div>
-                ) : <span className="text-slate-600">-</span>}
-            </div>
-        </td>
-        <td className="px-6 py-4">
-            <div className="flex items-center gap-1.5">
-                <div className={`w-1.5 h-1.5 rounded-full ${teacher.status === 'active' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-500'}`} />
-                <span className={`text-xs font-medium ${teacher.status === 'active' ? 'text-emerald-400' : 'text-slate-500'}`}>
-                    {teacher.status === 'active' ? 'Active' : 'Inactive'}
-                </span>
-            </div>
-        </td>
-        <td className="px-6 py-4 text-center">
-            <div className="flex items-center justify-center gap-2">
-                <button
-                    onClick={onEdit}
-                    className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-indigo-500/20 border border-white/5 hover:border-indigo-500/30 transition-all"
-                    title="Edit"
-                >
-                    <PencilSimple size={16} weight="bold" />
-                </button>
-                <button
-                    onClick={onDelete}
-                    className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-rose-500/20 border border-white/5 hover:border-rose-500/30 transition-all"
-                    title="Delete"
-                >
-                    <Trash size={16} weight="bold" />
-                </button>
-            </div>
-        </td>
-    </motion.tr>
-);
+// FacultyCard and FacultyRow extracted to components/FacultyCard.jsx and components/FacultyRow.jsx (E9)
 
 const ModalBackdrop = ({ children, onClose }) => (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
@@ -724,7 +611,9 @@ const ImportForm = ({ importFiles, setImportFiles, importLog, setImportLog, uplo
             {importFiles.length > 0 && (
                 <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-xs">
                     <div className="flex items-center justify-between mb-1">
-                        <span className="font-bold text-blue-300">📎 {importFiles.length} file(s) selected</span>
+                        <span className="font-bold text-blue-300 flex items-center gap-1.5">
+                            <Paperclip size={14} className="text-blue-400" /> {importFiles.length} file(s) selected
+                        </span>
                         {uploadProgress.total > 0 && (
                             <span className="text-blue-400 font-mono">{uploadProgress.current}/{uploadProgress.total}</span>
                         )}
@@ -744,9 +633,9 @@ const ImportForm = ({ importFiles, setImportFiles, importLog, setImportLog, uplo
             </div>
 
             {importLog && (
-                <div className={`p-4 rounded-xl text-xs font-mono max-h-48 overflow-y-auto ${importLog.includes('❌') ? 'bg-slate-900 border border-white/10' : 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20'}`}>
+                <div className={`p-4 rounded-xl text-xs font-mono max-h-48 overflow-y-auto ${importLog.includes('ERROR') ? 'bg-slate-900 border border-white/10' : 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20'}`}>
                     {importLog.split('\n').map((line, idx) => (
-                        <div key={idx} className={line.startsWith('❌') ? 'text-rose-300' : line.startsWith('✅') ? 'text-emerald-300' : 'text-blue-300'}>
+                        <div key={idx} className={line.startsWith('ERROR') ? 'text-rose-300' : line.startsWith('SUCCESS') ? 'text-emerald-300' : 'text-blue-300'}>
                             {line}
                         </div>
                     ))}

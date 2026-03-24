@@ -1,7 +1,6 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const { db, initDB } = require('./config/db');
@@ -49,7 +48,8 @@ app.use(cors({
   credentials: true
 }));
 app.use(cookieParser());
-app.use(bodyParser.json({ limit: '50mb' }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -82,7 +82,7 @@ async function startServer() {
       });
 
       if (adminUser) {
-        const bcrypt = require('bcrypt');
+        const bcrypt = require('bcryptjs');
         const isDefault = await bcrypt.compare('admin123', adminUser.password);
         if (isDefault) throw new Error('FATAL: Default admin password not changed. Refusing to start.');
       }

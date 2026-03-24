@@ -40,9 +40,9 @@ const submitLeaveRequest = (req, res) => {
 
     const db = getDB();
     db.run(
-        `INSERT INTO leave_requests (teacher_id, start_date, end_date, reason, leave_type, status, leave_type_id, total_days)
-         VALUES (?, ?, ?, ?, ?, 'pending', ?, ?)`,
-        [teacher_id, start_date, end_date, reason, leave_type || 'casual', leave_type_id, total_days],
+        `INSERT INTO leave_requests (teacher_id, start_date, end_date, reason, leave_type, status)
+         VALUES (?, ?, ?, ?, ?, 'pending')`,
+        [teacher_id, start_date, end_date, reason, leave_type || 'casual'],
         function (err) {
             if (err) {
                 console.error('Leave request error:', err);

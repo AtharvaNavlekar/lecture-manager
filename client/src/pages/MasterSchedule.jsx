@@ -121,7 +121,7 @@ const MasterSchedule = () => {
             // Fetch by day names instead of dates
             for (const day of weekDays) {
                 logger.debug(`Fetching lectures for: day=${day}, department=${selectedDept}`);
-                const res = await api.get(`/schedule?date=${day}&department=${selectedDept}`);
+                const res = await api.get(`/lectures/schedule?date=${day}&department=${selectedDept}`);
                 if (res.data.success) {
                     logger.debug(`  ✅ Received ${res.data.schedule.length} lectures for ${day}`);
                     allLectures.push(...res.data.schedule);
@@ -289,7 +289,7 @@ const MasterSchedule = () => {
                 }
             }
 
-            setImportLog(`Completed! ✅ ${successCount} successful, ❌ ${errorCount} failed`);
+            setImportLog(`Completed! ${successCount} successful, ${errorCount} failed`);
             toast.success(`Import complete! ${successCount}/${importFile.length} successful`, { id: toastId });
             fetchWeekLectures();
             setTimeout(() => {
@@ -371,7 +371,7 @@ const MasterSchedule = () => {
                     <CustomDropdown
                         label="Division"
                         value={`Division ${selectedDivision}`}
-                        options={divisions.map(d => `Division ${d.code}`)}
+                        options={divisionsList.map(code => `Division ${code}`)}
                         onChange={(val) => setSelectedDivision(val.replace('Division ', ''))}
                     />
                 </div>

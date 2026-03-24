@@ -1,8 +1,9 @@
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { db } = require('../config/db');
 
-const SECRET = process.env.JWT_SECRET || 'secret_key_123';
+const SECRET = process.env.JWT_SECRET;
+if (!SECRET) throw new Error('FATAL: JWT_SECRET environment variable is required. Set it in your .env file.');
 
 const login = (req, res) => {
     const { email, password } = req.body;
@@ -13,8 +14,12 @@ const login = (req, res) => {
 
         if (!user) {
             // Fixed Admin Fallback System for System Bootstrap
-            const FIXED_ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@college.edu';
-            const FIXED_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+            const FIXED_ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+            const FIXED_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+
+            if (!FIXED_ADMIN_EMAIL || !FIXED_ADMIN_PASSWORD) {
+                return res.status(404).json({ success: false, message: "User not found" });
+            }
 
             if (email === FIXED_ADMIN_EMAIL && password === FIXED_ADMIN_PASSWORD) {
                 if (req.rateLimitHelpers) {
@@ -50,20 +55,14 @@ const login = (req, res) => {
             return res.status(404).json({ success: false, message: "User not found" });
         }
 
-        // Check if password is hashed (starts with $2b$)
+        // Verify password using bcrypt
         let isValid = false;
         if (user.password && user.password.startsWith('$2b$')) {
             isValid = await bcrypt.compare(String(password), user.password);
         } else {
-            // Legacy plaintext fallback (for migration)
-            const legacyPass = user.password || String(user.id);
-            isValid = String(password) === legacyPass;
-
-            // Auto-hash for next time if valid
-            if (isValid) {
-                const hash = await bcrypt.hash(String(password), 10);
-                db.run("UPDATE teachers SET password = ? WHERE id = ?", [hash, user.id]);
-            }
+            // Password is not hashed — reject login and log warning
+            console.warn(`[SECURITY] User ${user.id} has an unhashed password. Run migrate-passwords.js to fix.`);
+            return res.status(401).json({ success: false, message: "Account requires password reset. Contact administrator." });
         }
 
         if (!isValid) {
@@ -177,4 +176,40 @@ const me = (req, res) => {
     res.json({ success: true, user: req.user });
 };
 
-module.exports = { login, register, logout, me };
+const changePassword = (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+        return res.status(400).json({ success: false, message: 'Both current and new password are required.' });
+    }
+    if (newPassword.length < 8) {
+        return res.status(400).json({ success: false, message: 'New password must be at least 8 characters.' });
+    }
+
+    const userId = req.userId;
+    if (userId === 0) {
+        return res.status(403).json({ success: false, message: 'Fixed admin cannot change password here. Update your .env file.' });
+    }
+
+    db.get("SELECT password FROM teachers WHERE id = ?", [userId], async (err, row) => {
+        if (err) return res.status(500).json({ success: false, message: 'Database error.' });
+        if (!row) return res.status(404).json({ success: false, message: 'User not found.' });
+
+        try {
+            const isValid = await bcrypt.compare(String(currentPassword), row.password);
+            if (!isValid) {
+                return res.status(400).json({ success: false, message: 'Current password is incorrect.' });
+            }
+
+            const hash = await bcrypt.hash(newPassword, 10);
+            db.run("UPDATE teachers SET password = ? WHERE id = ?", [hash, userId], function (updateErr) {
+                if (updateErr) return res.status(500).json({ success: false, message: 'Failed to update password.' });
+                console.log(`🔑 Password changed for user ${userId}`);
+                res.json({ success: true, message: 'Password updated successfully.' });
+            });
+        } catch (e) {
+            res.status(500).json({ success: false, message: 'Server error during password change.' });
+        }
+    });
+};
+
+module.exports = { login, register, logout, me, changePassword };

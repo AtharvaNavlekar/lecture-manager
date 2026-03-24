@@ -171,7 +171,8 @@ const StudentDirectory = () => {
                 }
             }
 
-            setImportLog(`Completed! ✅ ${successCount} successful, ❌ ${errorCount} failed`);
+            setImportLog(`Completed! ${successCount} successful, ${errorCount} failed`);
+            toast.success('Import completed successfully');
             fetchStudents();
         } catch (err) {
             setImportLog('Error: ' + (err.response?.data?.message || err.message));

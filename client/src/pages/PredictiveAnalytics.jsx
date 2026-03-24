@@ -8,7 +8,11 @@ import {
     TrendUp,
     Warning,
     CheckCircle,
-    Download
+    XCircle,
+    Download,
+    Robot,
+    RocketLaunch,
+    ChartBar
 } from '@phosphor-icons/react';
 import {
     LineChart,
@@ -143,22 +147,26 @@ const PredictiveAnalytics = () => {
                             <Sparkle size={32} weight="fill" />
                         </div>
                         <div className="flex-1">
-                            <h3 className="text-2xl font-bold text-white mb-3">
-                                🤖 AI System Ready - Awaiting Training Data
+                            <h3 className="text-2xl font-bold text-white mb-3 flex items-center gap-3">
+                                <Robot size={32} className="text-indigo-400" weight="fill" /> AI System Ready - Awaiting Training Data
                             </h3>
                             <p className="text-slate-300 text-lg mb-4">
                                 The Predictive Analytics system is installed and functional, but it needs <strong>attendance data</strong> to train itself.
                             </p>
                             <div className="bg-slate-900/50 p-4 rounded-xl mb-4">
-                                <h4 className="text-white font-bold mb-2">📊 Current Status:</h4>
+                                <h4 className="text-white font-bold mb-2 flex items-center gap-2">
+                                    <ChartBar size={20} className="text-indigo-400" /> Current Status:
+                                </h4>
                                 <ul className="text-slate-300 space-y-1">
-                                    <li>✅ <strong>{predictions.metadata.dataPoints} students</strong> registered</li>
-                                    <li>✅ <strong>900 lectures</strong> scheduled</li>
-                                    <li>❌ <strong>{predictions.metadata.attendanceRecords} attendance records</strong> (need: 200+ for basic predictions)</li>
+                                    <li className="flex items-center gap-2"><CheckCircle size={16} className="text-emerald-400" weight="fill" /> <strong>{predictions.metadata.dataPoints} students</strong> registered</li>
+                                    <li className="flex items-center gap-2"><CheckCircle size={16} className="text-emerald-400" weight="fill" /> <strong>900 lectures</strong> scheduled</li>
+                                    <li className="flex items-center gap-2"><XCircle size={16} className="text-rose-400" weight="fill" /> <strong>{predictions.metadata.attendanceRecords} attendance records</strong> (need: 200+ for basic predictions)</li>
                                 </ul>
                             </div>
                             <div className="bg-emerald-900/20 p-4 rounded-xl border border-emerald-500/30">
-                                <h4 className="text-emerald-400 font-bold mb-2">🚀 How to Activate ML Training:</h4>
+                                <h4 className="text-emerald-400 font-bold mb-2 flex items-center gap-2">
+                                    <RocketLaunch size={20} weight="fill" /> How to Activate ML Training:
+                                </h4>
                                 <ol className="text-slate-300 space-y-2 list-decimal list-inside">
                                     <li>Teachers mark attendance daily (takes 2 minutes per class)</li>
                                     <li>System collects patterns over 2-4 weeks</li>
