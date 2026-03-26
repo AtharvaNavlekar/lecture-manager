@@ -35,6 +35,15 @@ export default defineConfig({
         target: 'http://localhost:4050',
         changeOrigin: true,
         secure: false,
+        // SSE (Server-Sent Events) needs response buffering disabled
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq, req) => {
+            if (req.url.includes('/notifications/stream')) {
+              proxyReq.setHeader('Cache-Control', 'no-cache');
+              proxyReq.setHeader('Accept', 'text/event-stream');
+            }
+          });
+        },
       }
     }
   }

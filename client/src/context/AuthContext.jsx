@@ -68,7 +68,7 @@ export const AuthProvider = ({ children }) => {
                 return;
             }
 
-            const url = `${import.meta.env.VITE_API_URL || ''}/api/notifications/stream`;
+            const url = `${import.meta.env.VITE_API_URL || ''}/api/v1/notifications/stream`;
 
             logger.debug(`🔄 SSE attempt ${retryCount + 1}/${maxRetries}`);
             eventSource = new EventSource(url, { withCredentials: true });
