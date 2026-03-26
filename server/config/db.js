@@ -281,6 +281,8 @@ const initDB = () => new Promise((resolve, reject) => {
             confirmed_at DATETIME,
             notes TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            assignment_type TEXT DEFAULT 'manual',
+            syllabus_notes TEXT,
             FOREIGN KEY (leave_request_id) REFERENCES leave_requests(id) ON DELETE CASCADE,
             FOREIGN KEY (lecture_id) REFERENCES lectures(id),
             FOREIGN KEY (original_teacher_id) REFERENCES teachers(id),
@@ -633,13 +635,13 @@ const initDB = () => new Promise((resolve, reject) => {
                 });
 
                 const seedTimeSlots = [
-                    ['Lecture 1', '09:00', '10:00', 'lecture', 1],
-                    ['Lecture 2', '10:00', '11:00', 'lecture', 2],
-                    ['Lecture 3', '11:15', '12:15', 'lecture', 3],
-                    ['Lunch Break', '12:15', '13:00', 'break', 4],
-                    ['Lecture 4', '13:00', '14:00', 'lecture', 5],
-                    ['Lecture 5', '14:00', '15:00', 'lecture', 6],
-                    ['Lecture 6', '15:15', '16:15', 'lecture', 7],
+                    ['Period 1', '08:00', '10:00', 'practical', 1],
+                    ['Short Break', '10:00', '10:15', 'break', 2],
+                    ['Period 2', '10:15', '11:15', 'lecture', 3],
+                    ['Period 3', '11:15', '12:15', 'lecture', 4],
+                    ['Lunch Break', '12:15', '12:45', 'break', 5],
+                    ['Period 4', '12:45', '13:45', 'lecture', 6],
+                    ['Period 5', '13:45', '14:45', 'lecture', 7],
                 ];
                 seedTimeSlots.forEach(([name, start, end, type, order]) => {
                     db.run("INSERT OR IGNORE INTO time_slots (name, start_time, end_time, slot_type, sort_order) VALUES (?, ?, ?, ?, ?)", [name, start, end, type, order]);

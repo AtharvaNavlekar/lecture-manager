@@ -1,7 +1,6 @@
 import logger from '@/utils/logger';
 
-import React, { useState, useEffect, useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../utils/api';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -15,16 +14,11 @@ import {
 import CustomSelect from '../components/ui/CustomSelect';
 
 const UserRoleManagement = () => {
-    const { user } = useContext(AuthContext);
     const [users, setUsers] = useState([]);
     const [editingUser, setEditingUser] = useState(null);
     const [selectedRole, setSelectedRole] = useState('');
 
-    useEffect(() => {
-        fetchUsers();
-    }, []);
-
-    const fetchUsers = async () => {
+    const fetchUsers = useCallback(async () => {
         try {
             const res = await api.get('/admin/users-credentials');
             if (res.data.success) {
@@ -33,7 +27,12 @@ const UserRoleManagement = () => {
         } catch (err) {
             logger.error('Fetch users error:', err);
         }
-    };
+    }, []);
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    useEffect(() => {
+        fetchUsers();
+    }, [fetchUsers]);
 
     const handleAssignRole = async (userId, newRole) => {
         try {

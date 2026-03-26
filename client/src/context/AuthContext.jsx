@@ -1,7 +1,6 @@
 import logger from '@/utils/logger';
 
-import { createContext, useState, useEffect } from 'react';
-import { jwtDecode } from "jwt-decode";
+import { createContext, useState, useEffect, useCallback } from 'react';
 import api from '../utils/api';
 
 export const AuthContext = createContext();
@@ -11,7 +10,7 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [unreadCount, setUnreadCount] = useState(0);
 
-    const fetchUnreadCount = async () => {
+    const fetchUnreadCount = useCallback(async () => {
         if (!user) return;
         try {
             const res = await api.get('/notifications?status=unread&limit=1');
@@ -21,13 +20,13 @@ export const AuthProvider = ({ children }) => {
         } catch (e) {
             logger.error('Failed to fetch unread count', e);
         }
-    };
+    }, [user]);
 
     useEffect(() => {
         if (user) {
             fetchUnreadCount();
         }
-    }, [user]);
+    }, [user, fetchUnreadCount]);
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -51,11 +50,11 @@ export const AuthProvider = ({ children }) => {
             });
     }, []);
 
-    // Real-time Notifications (SSE) with Exponential Backoff Retry
+    // FIX BUG 7: Real-time Notifications (SSE) with Exponential Backoff Retry - max 3 retries
     useEffect(() => {
         let eventSource = null;
         let retryCount = 0;
-        const maxRetries = 5;
+        const maxRetries = 3; // FIX BUG 7: Reduce from 5 to 3
         const baseDelay = 1000; // 1 second
         let retryTimeout = null;
 
@@ -100,10 +99,10 @@ export const AuthProvider = ({ children }) => {
                 logger.error(`🔴 SSE Error (attempt ${retryCount + 1}/${maxRetries})`, err);
                 eventSource.close();
 
-                // Exponential backoff: 1s, 2s, 4s, 8s, 16s
+                // FIX BUG 7: Exponential backoff with max 60s delay
                 retryCount++;
                 if (retryCount < maxRetries) {
-                    const delay = baseDelay * Math.pow(2, retryCount - 1);
+                    const delay = Math.min(1000 * Math.pow(2, retryCount - 1), 60000); // max 60s
                     logger.debug(`⏱️ Retrying SSE in ${delay}ms...`);
 
                     retryTimeout = setTimeout(() => {

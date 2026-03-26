@@ -6,12 +6,26 @@ import api from '../utils/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, CheckCircle, EnvelopeOpen, WarningCircle, Info, Eye } from '@phosphor-icons/react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const Inbox = () => {
     const { fetchUnreadCount } = useContext(AuthContext);
     const navigate = useNavigate();
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    async function fetchNotifications() {
+        try {
+            const res = await api.get('/notifications');
+            if (res.data.success) {
+                setNotifications(res.data.notifications);
+            }
+            setLoading(false);
+        } catch (e) {
+            logger.error("Inbox Error", e);
+            setLoading(false);
+        }
+    }
 
     useEffect(() => {
         fetchNotifications();
@@ -37,19 +51,6 @@ const Inbox = () => {
         window.addEventListener('new-notification', handleNewNotification);
         return () => window.removeEventListener('new-notification', handleNewNotification);
     }, []);
-
-    const fetchNotifications = async () => {
-        try {
-            const res = await api.get('/notifications');
-            if (res.data.success) {
-                setNotifications(res.data.notifications);
-            }
-            setLoading(false);
-        } catch (e) {
-            logger.error("Inbox Error", e);
-            setLoading(false);
-        }
-    };
 
     const markAsRead = async (id) => {
         try {

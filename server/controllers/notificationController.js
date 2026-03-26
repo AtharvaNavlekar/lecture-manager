@@ -168,11 +168,22 @@ const markAllAsRead = async (req, res) => {
     try {
         const userId = req.userId;
 
-        await dbAsync.run(`
-            UPDATE notifications
-            SET status = 'read', read_at = datetime('now')
-            WHERE target_teacher_id = ? AND status = 'unread'
-        `, [userId]);
+        // FIX BUG 5: Try with read_at column first, then fallback to is_read
+        try {
+            await dbAsync.run(`
+                UPDATE notifications
+                SET is_read = 1, read_at = datetime('now')
+                WHERE target_teacher_id = ? AND is_read = 0
+            `, [userId]);
+        } catch (err) {
+            // Fallback: update without read_at if column doesn't exist
+            console.warn('read_at column not available, using is_read only:', err.message);
+            await dbAsync.run(`
+                UPDATE notifications
+                SET is_read = 1
+                WHERE target_teacher_id = ? AND is_read = 0
+            `, [userId]);
+        }
 
         res.json({ success: true, message: 'All notifications marked as read' });
 

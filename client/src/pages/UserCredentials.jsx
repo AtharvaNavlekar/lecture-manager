@@ -1,7 +1,7 @@
 import logger from '@/utils/logger';
 
-import React, { useState, useEffect, useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
+import React, { useState, useEffect, useCallback } from 'react';
+
 import api from '../utils/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -22,7 +22,6 @@ import {
 } from '@phosphor-icons/react';
 
 const UserCredentials = () => {
-    const { user } = useContext(AuthContext);
     const [users, setUsers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -41,34 +40,7 @@ const UserCredentials = () => {
 
     const departments = ['All', ...new Set(users.map(u => u.department).filter(Boolean))];
 
-    useEffect(() => {
-        fetchUsers();
-    }, []);
-
-    useEffect(() => {
-        filterUsers();
-        // Calculate stats
-        const total = users.length;
-        const vaulted = users.filter(u => u.has_encrypted_password).length;
-        setStats({
-            total,
-            vaulted,
-            legacy: total - vaulted
-        });
-    }, [searchTerm, deptFilter, users]);
-
-    useEffect(() => {
-        // Simple password strength calc
-        let s = 0;
-        if (newPassword.length > 5) s++;
-        if (newPassword.length > 9) s++;
-        if (/[A-Z]/.test(newPassword)) s++;
-        if (/[0-9]/.test(newPassword)) s++;
-        if (/[^A-Za-z0-9]/.test(newPassword)) s++;
-        setPassStrength(s);
-    }, [newPassword]);
-
-    const fetchUsers = async () => {
+    const fetchUsers = useCallback(async () => {
         try {
             const res = await api.get('/admin/users-credentials');
             if (res.data.success) {
@@ -80,9 +52,9 @@ const UserCredentials = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
-    const filterUsers = () => {
+    const filterUsers = useCallback(() => {
         let res = [...users];
         if (searchTerm) {
             const lower = searchTerm.toLowerCase();
@@ -96,7 +68,34 @@ const UserCredentials = () => {
             res = res.filter(u => u.department === deptFilter);
         }
         setFilteredUsers(res);
-    };
+    }, [users, searchTerm, deptFilter]);
+
+    useEffect(() => {
+        fetchUsers();
+    }, [fetchUsers]);
+
+    useEffect(() => {
+        filterUsers();
+        // Calculate stats
+        const total = users.length;
+        const vaulted = users.filter(u => u.has_encrypted_password).length;
+        setStats({
+            total,
+            vaulted,
+            legacy: total - vaulted
+        });
+    }, [filterUsers, users]);
+
+    useEffect(() => {
+        // Simple password strength calc
+        let s = 0;
+        if (newPassword.length > 5) s++;
+        if (newPassword.length > 9) s++;
+        if (/[A-Z]/.test(newPassword)) s++;
+        if (/[0-9]/.test(newPassword)) s++;
+        if (/[^A-Za-z0-9]/.test(newPassword)) s++;
+        setPassStrength(s);
+    }, [newPassword]);
 
     const copyToClipboard = (text, label) => {
         navigator.clipboard.writeText(text);
@@ -148,29 +147,32 @@ const UserCredentials = () => {
                 setShowSetPassModal(false);
                 fetchUsers();
             }
-        } catch (error) {
+        } catch {
             toast.error('Failed to update', { id: toastId });
         }
     };
 
-    const StatusCard = ({ label, value, icon: Icon, color }) => (
-        <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex-1 flex items-center gap-4 p-4 rounded-2xl glass border border-white/5 relative overflow-hidden group hover:bg-white/5 transition-colors"
-        >
-            <div className={`p-3 rounded-xl bg-[#020617] border border-white/5 ${color} shadow-lg`}>
-                <Icon size={24} weight="duotone" />
-            </div>
-            <div>
-                <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-0.5">{label}</p>
-                <div className="flex items-baseline gap-2">
-                    <h2 className="text-xl font-black text-white">{value}</h2>
-                    {label.includes('Vaulted') && stats.total > 0 && <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 rounded-full">{(value / stats.total * 100).toFixed(0)}%</span>}
+    const StatusCard = ({ label, value, icon, color }) => {
+        const IconComponent = icon;
+        return (
+            <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex-1 flex items-center gap-4 p-4 rounded-2xl glass border border-white/5 relative overflow-hidden group hover:bg-white/5 transition-colors"
+            >
+                <div className={`p-3 rounded-xl bg-[#020617] border border-white/5 ${color} shadow-lg`}>
+                    <IconComponent size={24} weight="duotone" />
                 </div>
-            </div>
-        </motion.div>
-    );
+                <div>
+                    <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-0.5">{label}</p>
+                    <div className="flex items-baseline gap-2">
+                        <h2 className="text-xl font-black text-white">{value}</h2>
+                        {label.includes('Vaulted') && stats.total > 0 && <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 rounded-full">{(value / stats.total * 100).toFixed(0)}%</span>}
+                    </div>
+                </div>
+            </motion.div>
+        );
+    };
 
     return (
         <div className="max-w-7xl mx-auto space-y-8 pb-20">

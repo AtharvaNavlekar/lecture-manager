@@ -368,13 +368,22 @@ router.post('/substitute/assign', async (req, res) => {
     try {
         const { lecture_id, original_teacher_id, substitute_teacher_id, leave_request_id, notes } = req.body;
 
+        // Fetch lecture details to get assignment_date and time_slot
+        const lecture = await dbGet(`
+            SELECT date, time_slot FROM lectures WHERE id = ?
+        `, [lecture_id]);
+
+        if (!lecture) {
+            return res.status(404).json({ success: false, message: 'Lecture not found' });
+        }
+
         const result = await dbRun(`
             INSERT INTO substitute_assignments (
                 lecture_id, original_teacher_id, substitute_teacher_id,
                 leave_request_id, assignment_type, assigned_at, 
-                syllabus_notes, status
-            ) VALUES (?, ?, ?, ?, 'manual', CURRENT_TIMESTAMP, ?, 'assigned')
-        `, [lecture_id, original_teacher_id, substitute_teacher_id, leave_request_id, notes]);
+                syllabus_notes, status, assignment_date, time_slot
+            ) VALUES (?, ?, ?, ?, 'manual', CURRENT_TIMESTAMP, ?, 'assigned', ?, ?)
+        `, [lecture_id, original_teacher_id, substitute_teacher_id, leave_request_id, notes, lecture.date, lecture.time_slot]);
 
         res.json({
             success: true,
@@ -389,7 +398,7 @@ router.post('/substitute/assign', async (req, res) => {
 // POST substitute request (for teachers requesting coverage)
 router.post('/substitute/request', async (req, res) => {
     try {
-        const { date, time_slot, subject, class_year, reason, teacher_id } = req.body;
+        const { date, time_slot, subject, class_year, reason, teacher_id, lecture_ids } = req.body;
 
         // Validate required fields
         if (!date || !time_slot || !subject || !class_year || !reason || !teacher_id) {
@@ -398,6 +407,9 @@ router.post('/substitute/request', async (req, res) => {
                 message: 'All fields are required'
             });
         }
+
+        // FIX BUG 3: Define affected_lectures before using it
+        const affected_lectures = Array.isArray(lecture_ids) ? lecture_ids : [];
 
         // 1. Find or Create Lecture
         let lecture = await dbGet(`
@@ -443,7 +455,7 @@ router.post('/substitute/request', async (req, res) => {
                 reason, notes, status, leave_type, affected_lectures, submitted_at
             ) 
             VALUES (?, ?, ?, ?, ?, 'approved', 'casual', ?, CURRENT_TIMESTAMP)
-        `, [teacher_id, date, date, reason, notes, affected_lectures]);
+        `, [teacher_id, date, date, reason, notes, JSON.stringify(affected_lectures)]);
 
         res.json({
             success: true,

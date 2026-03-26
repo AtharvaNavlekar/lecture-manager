@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../utils/api';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     Gear,
     Buildings,
@@ -63,7 +64,7 @@ const SkeletonCard = () => (
 // ─── Main Component ───
 const SystemSettings = () => {
     const [activeTab, setActiveTab] = useState('departments');
-    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [sidebarCollapsed] = useState(false);
 
     const tabs = [
         { id: 'departments', label: 'Departments', icon: Buildings, description: 'Manage college departments' },
@@ -77,7 +78,6 @@ const SystemSettings = () => {
         { id: 'audit', label: 'Audit Log', icon: ClockCounterClockwise, description: 'Change history tracker' }
     ];
 
-    const activeTabData = tabs.find(t => t.id === activeTab);
     const theme = CATEGORY_THEMES[activeTab] || CATEGORY_THEMES.departments;
 
     return (
@@ -210,23 +210,23 @@ const CrudPanel = ({ title, endpoint, columns, icon: Icon, defaultValues = {} })
 
     const theme = CATEGORY_THEMES[endpoint] || CATEGORY_THEMES.departments;
 
-    useEffect(() => {
-        fetchItems();
-    }, [endpoint]);
-
-    const fetchItems = async () => {
+    const fetchItems = useCallback(async () => {
         try {
             setLoading(true);
             const res = await api.get(`/config/${endpoint}`);
             if (res.data.success) {
                 setItems(res.data[endpoint] || []);
             }
-        } catch (error) {
+        } catch {
             toast.error(`Failed to fetch ${title}`);
         } finally {
             setLoading(false);
         }
-    };
+    }, [endpoint, title]);
+
+    useEffect(() => {
+        fetchItems();
+    }, [fetchItems]);
 
     const handleEdit = (item) => {
         setEditingItem(item);
@@ -582,22 +582,22 @@ const TemplatesPanel = () => {
 
     const theme = CATEGORY_THEMES.templates;
 
-    useEffect(() => {
-        fetchTemplates();
-    }, []);
-
-    const fetchTemplates = async () => {
+    const fetchTemplates = useCallback(async () => {
         try {
             const res = await api.get('/config/templates');
             if (res.data.success) {
                 setTemplates(res.data.templates);
             }
-        } catch (err) {
+        } catch {
             toast.error('Failed to load templates');
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchTemplates();
+    }, [fetchTemplates]);
 
     const applyTemplate = (id, merge = false) => {
         toast.custom((t) => (
@@ -634,7 +634,7 @@ const TemplatesPanel = () => {
                                     toast.success('Template applied successfully!', { id: loadingToast });
                                     setTimeout(() => window.location.reload(), 1500);
                                 }
-                            } catch (err) {
+                            } catch {
                                 toast.error('Failed to apply template', { id: loadingToast });
                             }
                         }}
@@ -750,11 +750,7 @@ const AuditLogPanel = () => {
 
     const theme = CATEGORY_THEMES.audit;
 
-    useEffect(() => {
-        fetchLogs();
-    }, [filter]);
-
-    const fetchLogs = async () => {
+    const fetchLogs = useCallback(async () => {
         try {
             setLoading(true);
             const params = filter !== 'all' ? `?table_name=${filter}` : '';
@@ -762,12 +758,16 @@ const AuditLogPanel = () => {
             if (res.data.success) {
                 setLogs(res.data.logs);
             }
-        } catch (err) {
+        } catch {
             toast.error('Failed to load audit logs');
         } finally {
             setLoading(false);
         }
-    };
+    }, [filter]);
+
+    useEffect(() => {
+        fetchLogs();
+    }, [fetchLogs]);
 
     const getActionStyle = (action) => {
         switch (action) {

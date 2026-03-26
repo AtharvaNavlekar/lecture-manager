@@ -139,6 +139,7 @@ async function startServer() {
     app.use('/api/v1/config', configRoutes);
     app.use('/api/v1/automation', require('./routes/automationRoutes'));
     app.use('/api/v1/analytics', require('./routes/analyticsRoutes'));
+    app.use('/api/v1/sync', require('./routes/syncRoutes')); // FIX BUG 4
 
     // Legacy route support
     app.use('/api', lectureRoutes);

@@ -1,6 +1,6 @@
 import logger from '@/utils/logger';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     FileText,
     DownloadSimple,
@@ -32,11 +32,7 @@ const SubstituteReport = () => {
         avgPerTeacher: 0
     });
 
-    useEffect(() => {
-        fetchReport();
-    }, [startDate, endDate]);
-
-    const fetchReport = async () => {
+    const fetchReport = useCallback(async () => {
         try {
             setLoading(true);
             const res = await api.get(`/leaves/substitute/report?start_date=${startDate}&end_date=${endDate}`);
@@ -53,7 +49,11 @@ const SubstituteReport = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [startDate, endDate]);
+
+    useEffect(() => {
+        fetchReport();
+    }, [fetchReport]);
 
     const calculateStats = (details) => {
         const totalAssignments = details.length;
@@ -96,18 +96,21 @@ const SubstituteReport = () => {
         document.body.removeChild(link);
     };
 
-    const StatCard = ({ icon: Icon, label, value, color, bg, border }) => (
-        <div className={`glass p-6 rounded-3xl border ${border} relative overflow-hidden group`}>
-            <div className={`absolute -right-6 -top-6 w-24 h-24 rounded-full ${bg} blur-xl opacity-50 group-hover:opacity-100 transition-opacity`} />
-            <div className="relative z-10">
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl mb-4 ${bg} ${color}`}>
-                    <Icon weight="duotone" />
+    const StatCard = ({ icon, label, value, color, bg, border }) => {
+        const IconComponent = icon;
+        return (
+            <div className={`glass p-6 rounded-3xl border ${border} relative overflow-hidden group`}>
+                <div className={`absolute -right-6 -top-6 w-24 h-24 rounded-full ${bg} blur-xl opacity-50 group-hover:opacity-100 transition-opacity`} />
+                <div className="relative z-10">
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl mb-4 ${bg} ${color}`}>
+                        <IconComponent weight="duotone" />
+                    </div>
+                    <div className="text-2xl md:text-3xl font-bold text-white tracking-tighter mb-1">{value}</div>
+                    <div className="text-sm text-slate-400 font-medium">{label}</div>
                 </div>
-                <div className="text-2xl md:text-3xl font-bold text-white tracking-tighter mb-1">{value}</div>
-                <div className="text-sm text-slate-400 font-medium">{label}</div>
             </div>
-        </div>
-    );
+        );
+    };
 
     return (
         <div className="max-w-7xl mx-auto space-y-8 pb-10">

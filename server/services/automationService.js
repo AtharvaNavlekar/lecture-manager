@@ -72,8 +72,13 @@ class AutomationService {
             // TODO: Send email notification
             console.log(`✅ Leave ${leave.id} auto-approved`);
 
-            // Trigger substitute assignment process
-            await this.createSubstituteAssignments(leave);
+            // FIX BUG 2: Wrap substitute assignment in try/catch so approval succeeds even if substitute creation fails
+            try {
+                await this.createSubstituteAssignments(leave);
+            } catch (subErr) {
+                console.error('Substitute creation failed (non-fatal):', subErr.message);
+                // do NOT re-throw — leave approval should still succeed
+            }
         } catch (err) {
             console.error(`Error auto-approving leave ${leave.id}:`, err);
         }
@@ -91,15 +96,23 @@ class AutomationService {
                 `, [lectureId]);
 
                 if (existing.length === 0) {
-                    // Create pending assignment
-                    await dbRun(`
-                        INSERT INTO substitute_assignments (
-                            lecture_id, original_teacher_id, leave_request_id,
-                            assignment_type, status, assigned_at, response_deadline
-                        ) VALUES (?, ?, ?, 'auto', 'pending', CURRENT_TIMESTAMP, datetime('now', '+15 minutes'))
-                    `, [lectureId, leave.teacher_id, leave.id]);
+                    // Fetch lecture details for assignment_date and time_slot
+                    const lecture = await dbGet(`
+                        SELECT date, time_slot FROM lectures WHERE id = ?
+                    `, [lectureId]);
 
-                    console.log(`📝 Created pending substitute assignment for lecture ${lectureId}`);
+                    if (lecture) {
+                        // Create pending assignment
+                        await dbRun(`
+                            INSERT INTO substitute_assignments (
+                                lecture_id, original_teacher_id, leave_request_id,
+                                assignment_type, status, assigned_at, response_deadline,
+                                assignment_date, time_slot
+                            ) VALUES (?, ?, ?, 'auto', 'pending', CURRENT_TIMESTAMP, datetime('now', '+15 minutes'), ?, ?)
+                        `, [lectureId, leave.teacher_id, leave.id, lecture.date, lecture.time_slot]);
+
+                        console.log(`📝 Created pending substitute assignment for lecture ${lectureId}`);
+                    }
                 }
             }
         } catch (err) {

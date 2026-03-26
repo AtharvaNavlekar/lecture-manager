@@ -1,5 +1,5 @@
 import logger from '@/utils/logger';
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useContext, useRef, useCallback } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -27,8 +27,6 @@ import {
     EyeSlash,
     X,
     Moon,
-    User,
-    PencilSimple,
     ArrowSquareOut,
     Warning,
 } from '@phosphor-icons/react';
@@ -81,9 +79,7 @@ const Settings = () => {
     const [pwVisible, setPwVisible] = useState({ current: false, next: false, confirm: false });
     const [pwErrors, setPwErrors] = useState({});
 
-    useEffect(() => { fetchSettings(); }, []);
-
-    const fetchSettings = async (retry = 0) => {
+    const fetchSettings = useCallback(async (retry = 0) => {
         try {
             const res = await api.get('/settings');
             if (res.data.success) {
@@ -96,7 +92,11 @@ const Settings = () => {
                 setTimeout(() => fetchSettings(retry + 1), 1000 * (retry + 1));
             else logger.error('Settings fetch failed:', e);
         } finally { setLoading(false); }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchSettings();
+    }, [fetchSettings]);
 
     /* Tab-aware labels for toast messages */
     const TAB_LABELS = { general: 'Organization', academic: 'Academic', users: 'User', system: 'System' };

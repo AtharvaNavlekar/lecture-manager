@@ -45,15 +45,32 @@ const Analytics = () => {
         attendance: []
     });
     const [loading, setLoading] = useState(true);
+    const [velocityPeriod, setVelocityPeriod] = useState('7'); // FIX BUG 10: Add velocity period state
+    const [velocityData, setVelocityData] = useState([]);
 
     useEffect(() => {
         fetchAnalytics();
     }, []);
 
-    const fetchAnalytics = async () => {
-        setLoading(true);
+    // FIX BUG 10: Add separate useEffect for velocity data with period dependency
+    useEffect(() => {
+        fetchVelocityData(velocityPeriod);
+    }, [velocityPeriod]);
+
+    const fetchVelocityData = async (days = '7') => {
         try {
-            // Fetch analytics summary
+            const res = await api.get(`/analytics/lecture-velocity?days=${days}`);
+            if (res.data.success) {
+                setVelocityData(res.data.data || []);
+            }
+        } catch (err) {
+            logger.warn('Velocity fetch error:', err.message);
+            setVelocityData([]);
+        }
+    };
+
+    const fetchAnalytics = async () => {
+        try {
             const analyticsRes = await api.get('/analytics/summary');
 
             if (analyticsRes.data.success) {
@@ -188,16 +205,16 @@ const Analytics = () => {
                                 <p className="text-slate-400 text-sm mt-1 ml-3">Real-time completion metrics</p>
                             </div>
                             <div className="flex bg-slate-800/80 p-1 rounded-xl border border-white/5">
-                                <button className="px-3 py-1 text-xs font-bold text-cyan-400 bg-cyan-400/10 rounded-lg border border-cyan-400/20 shadow-[0_0_10px_rgba(34,211,238,0.1)]">7 Days</button>
-                                <button className="px-3 py-1 text-xs font-medium text-slate-400 hover:text-white transition-colors">30 Days</button>
+                                <button onClick={() => setVelocityPeriod('7')} className={`px-3 py-1 text-xs font-bold rounded-lg border transition-all ${velocityPeriod === '7' ? 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20 shadow-[0_0_10px_rgba(34,211,238,0.1)]' : 'text-slate-400 hover:text-white border-transparent'}`}>7 Days</button>
+                                <button onClick={() => setVelocityPeriod('30')} className={`px-3 py-1 text-xs font-bold rounded-lg border transition-all ${velocityPeriod === '30' ? 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20 shadow-[0_0_10px_rgba(34,211,238,0.1)]' : 'text-slate-400 hover:text-white border-transparent'}`}>30 Days</button>
                             </div>
                         </div>
 
-                        {stats.monthlyTrend && stats.monthlyTrend.length > 0 ? (
+                        {velocityData && velocityData.length > 0 ? (
                             <div className="h-[320px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart
-                                        data={stats.monthlyTrend}
+                                        data={velocityData}
                                         margin={{ top: 20, right: 10, left: 0, bottom: 0 }}
                                     >
                                         <defs>
@@ -235,7 +252,7 @@ const Analytics = () => {
                                         />
                                         <Area
                                             type="monotone"
-                                            dataKey="total"
+                                            dataKey="count"
                                             stroke="#22d3ee"
                                             strokeWidth={3}
                                             fillOpacity={1}
@@ -243,7 +260,7 @@ const Analytics = () => {
                                             activeDot={{ r: 6, strokeWidth: 0, fill: '#fff', shadow: '0 0 10px #22d3ee' }}
                                         >
                                             <LabelList
-                                                dataKey="total"
+                                                dataKey="count"
                                                 position="top"
                                                 offset={10}
                                                 style={{ fill: '#22d3ee', fontSize: '12px', fontWeight: 'bold' }}

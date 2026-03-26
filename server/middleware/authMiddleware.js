@@ -60,6 +60,18 @@ const verifyToken = (req, res, next) => {
                 return res.status(401).json({ success: false, message: 'Database error during authentication.' });
             }
 
+            // FIX BUG 12: Set role from token or fallback to database
+            let userRole = decoded.role || 'teacher';
+            
+            // If role is missing from token, compute from DB
+            if (!decoded.role && user) {
+                if (user.department === 'Administration' || user.department === 'Admin') {
+                    userRole = 'admin';
+                } else if (user.is_hod === 1 || user.is_acting_hod === 1) {
+                    userRole = 'hod';
+                }
+            }
+
             if (!user) {
                 logger.error('User not found in database. ID:', decoded.id);
                 return res.status(401).json({ success: false, message: 'User no longer exists or access revoked.' });
@@ -67,18 +79,11 @@ const verifyToken = (req, res, next) => {
 
             logger.debug('User authenticated:', user.id);
 
-            // Determine role dynamically based on DB state, not just token
-            let role = 'teacher';
-            if (user.department === 'Administration' || user.department === 'Admin') {
-                role = 'admin';
-            } else if (user.is_hod === 1 || user.is_acting_hod === 1) {
-                role = 'hod';
-            }
-
             req.userId = user.id;
-            req.userRole = role; // Source of truth
+            req.userRole = userRole; // Source of truth
             req.userDept = user.department;
             req.user = user; // Full user object for controllers
+            req.user.role = userRole; // Add role to user object
             next();
         });
     });

@@ -1,9 +1,8 @@
 import logger from '@/utils/logger';
 
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import api from '../utils/api';
-import { motion } from 'framer-motion';
 import {
     ChalkboardTeacher,
     Download,
@@ -36,11 +35,7 @@ const TeacherAnalytics = () => {
         performanceMetrics: []
     });
 
-    useEffect(() => {
-        fetchTeacherAnalytics();
-    }, []);
-
-    const fetchTeacherAnalytics = async () => {
+    const fetchTeacherAnalytics = useCallback(async () => {
         try {
             const [lecturesRes, assignmentsRes, evaluationsRes, teachersRes] = await Promise.all([
                 api.get('/lectures/schedule'),
@@ -114,7 +109,12 @@ const TeacherAnalytics = () => {
         } catch (err) {
             logger.error('Fetch teacher analytics error:', err);
         }
-    };
+    }, [user.id, user.role, user.department, user.is_hod]);
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    useEffect(() => {
+        fetchTeacherAnalytics();
+    }, [fetchTeacherAnalytics]);
 
     const handleExport = () => {
         const csvContent = [

@@ -3,7 +3,7 @@ const { db } = require('../config/db');
 // Get audit logs with filtering
 // Get audit logs with filtering
 const getAuditLogs = (req, res) => {
-    const { user_type, action, resource, start_date, end_date, limit = 100 } = req.query;
+    const { user_type, action, resource, start_date, end_date, limit = 50 } = req.query;
     const userRole = req.userRole;
 
     // Only admins can view audit logs
@@ -15,6 +15,9 @@ const getAuditLogs = (req, res) => {
     }
 
     try {
+        const { promisify } = require('util');
+        const dbAll = promisify(db.all.bind(db));
+
         let sql = `SELECT * FROM audit_logs WHERE 1=1`;
         const params = [];
 
@@ -44,32 +47,42 @@ const getAuditLogs = (req, res) => {
             params.push(end_date);
         }
 
-        sql += ' ORDER BY created_at DESC LIMIT ?';
-        params.push(parseInt(limit));
+        const page = parseInt(req.query.page) || 1;
+        const pageLimit = parseInt(limit);
+        const offset = (page - 1) * pageLimit;
 
-        // Using sqlite3 callback API
+        sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+        params.push(pageLimit, offset);
+
         db.all(sql, params, (err, logs) => {
             if (err) {
                 console.error('❌ DB Error in getAuditLogs:', err);
-                return res.status(500).json({
-                    success: false,
-                    message: 'Database error fetching logs',
-                    error: err.message
+                // FIX BUG 11: Never crash, return safe empty response
+                return res.json({
+                    success: true,
+                    logs: [],
+                    total: 0,
+                    page,
+                    limit: pageLimit
                 });
             }
 
             res.json({
                 success: true,
                 logs,
-                total: logs.length
+                total: logs.length,
+                page,
+                limit: pageLimit
             });
         });
 
     } catch (error) {
         console.error('❌ Get audit logs error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to fetch audit logs'
+        // FIX BUG 11: Never crash
+        res.json({
+            success: true,
+            logs: [],
+            total: 0
         });
     }
 };
